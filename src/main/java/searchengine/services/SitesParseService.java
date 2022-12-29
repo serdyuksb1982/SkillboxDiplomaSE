@@ -1,6 +1,6 @@
 package searchengine.services;
 
-import lombok.Getter;;
+import lombok.Getter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,17 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Getter
 public class SitesParseService extends RecursiveTask<Integer> {
-
-    private static Set<String> websites = new CopyOnWriteArraySet<>();
+    private Set<String> websites = new CopyOnWriteArraySet<>();
 
     private AtomicInteger pageId;
-    private String mainPage = "";
+    private String mainPage = new String("");
     private PageRepository pageRepository;
     private SiteRepository siteRepository;
     private SitesList config;
 
     private Integer pageCount;
-    private final List<SitesParseService> children;
+    private final List<SitesParseService> pageChildren;
     private String startPage;
     private final SiteModel site;
 
@@ -57,7 +56,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
         this.siteRepository = siteRepository;
         this.config = config;
         this.pageId = pageId;
-        children = new ArrayList<>();
+        pageChildren = new ArrayList<>();
         pageCount = 0;
         websites.add(startPage);
         if (this.mainPage.equals("")) {
@@ -72,7 +71,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
                              PageRepository pageRepository) {
         this.startPage = startPage;
         this.site = site;
-        children = new ArrayList<>();
+        pageChildren = new ArrayList<>();
         this.pageId = new AtomicInteger(0);
         websites.add(startPage);
         websites.add(startPage.concat("/") );
@@ -89,7 +88,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
 
     @Override
     protected Integer compute() {
-        if (typeElementControl(startPage)) {
+        if (isSiteElementsType(startPage)) {
             try {
                 if (!startPage.endsWith("/")) {
                     startPage += "/";
@@ -107,7 +106,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
 
                     Thread.sleep(1000);
 
-                    addPage(response, document);
+                    addNewSitePage(response, document);
 
                     Elements elements = document.select("a");
                     for (Element element : elements) {
@@ -129,7 +128,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
                 site.setStatus(Status.FAILED);
                 siteRepository.save(site);
             }
-            for (SitesParseService it : children) {
+            for (SitesParseService it : pageChildren) {
                 pageCount += it.join();
             }
         }
@@ -140,20 +139,22 @@ public class SitesParseService extends RecursiveTask<Integer> {
         websites.add(attr);
         SitesParseService newChild = new SitesParseService(attr, site, mainPage, pageRepository, siteRepository, config, pageId);
         newChild.fork();
-        children.add(newChild);
+        pageChildren.add(newChild);
     }
 
-    private boolean typeElementControl(String pathPage) {
+    private boolean isSiteElementsType(String pathPage) {
         List<String> WRONG_TYPES = Arrays.asList(
                 "jpeg", "jpg", "pdf",
                 "png", "gif", "zip",
                 "tar", "jar", "gz",
                 "svg", "ppt", "pptx");
-        if (!WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1))) return true;
+        if (!WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1))) {
+            return true;
+        }
         else return false;
     }
 
-    private void addPage(Connection.Response response, Document parse) {
+    private PageModel addNewSitePage(Connection.Response response, Document parse) {
         PageModel page = pageRepository.findByPath(startPage);
         if (page == null) page = new PageModel();
 
@@ -163,5 +164,6 @@ public class SitesParseService extends RecursiveTask<Integer> {
         page.setSite(site);
 
         pageRepository.save(page);
+        return page;
     }
 }

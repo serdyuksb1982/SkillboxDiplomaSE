@@ -12,7 +12,6 @@ import java.util.List;
 @Repository
 public interface PageRepository extends JpaRepository<PageModel, Integer> {
 
-    List<PageModel> findAllBySite(SiteModel site);
 
     Integer countBySite(SiteModel site);
 
