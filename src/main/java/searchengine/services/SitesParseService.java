@@ -1,6 +1,6 @@
 package searchengine.services;
 
-import lombok.Getter;
+import lombok.Getter;;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,25 +30,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Getter
 public class SitesParseService extends RecursiveTask<Integer> {
-    private static final List<String> WRONG_TYPES = Arrays.asList("jpeg", "jpg", "pdf", "png", "gif",
-            "zip", "tar", "jar", "gz", "svg", "ppt", "pptx");
 
-    private static final Set<String> websites = new CopyOnWriteArraySet<>();
+    private static Set<String> websites = new CopyOnWriteArraySet<>();
 
-    private static AtomicInteger pageId;
+    private AtomicInteger pageId;
     private String mainPage = "";
-    private static PageRepository pageRepository;
-    private static SiteRepository siteRepository;
-    private static SitesList config;
+    private PageRepository pageRepository;
+    private SiteRepository siteRepository;
+    private SitesList config;
 
     private Integer pageCount;
     private final List<SitesParseService> children;
     private String startPage;
     private final SiteModel site;
 
-    public SitesParseService(String startPage, SiteModel site, String mainPage) {
+    public SitesParseService(String startPage,
+                             SiteModel site,
+                             String mainPage,
+                             PageRepository pageRepository,
+                             SiteRepository siteRepository,
+                             SitesList config,
+                             AtomicInteger pageId) {
         this.startPage = startPage;
         this.site = site;
+        this.pageRepository = pageRepository;
+        this.siteRepository = siteRepository;
+        this.config = config;
+        this.pageId = pageId;
         children = new ArrayList<>();
         pageCount = 0;
         websites.add(startPage);
@@ -65,18 +73,18 @@ public class SitesParseService extends RecursiveTask<Integer> {
         this.startPage = startPage;
         this.site = site;
         children = new ArrayList<>();
-        SitesParseService.pageId = new AtomicInteger(0);
+        this.pageId = new AtomicInteger(0);
         websites.add(startPage);
-        websites.add(startPage + "/");
+        websites.add(startPage.concat("/") );
         pageCount = 0;
 
         if (mainPage.equals("")) mainPage = startPage;
 
-        if (SitesParseService.pageRepository == null) SitesParseService.pageRepository = pageRepository;
+        if (this.pageRepository == null) this.pageRepository = pageRepository;
 
-        if (SitesParseService.siteRepository == null) SitesParseService.siteRepository = siteRepository;
+        if (this.siteRepository == null) this.siteRepository = siteRepository;
 
-        SitesParseService.config = config;
+        this.config = config;
     }
 
     @Override
@@ -130,13 +138,19 @@ public class SitesParseService extends RecursiveTask<Integer> {
 
     private void newChild(String attr) {
         websites.add(attr);
-        SitesParseService newChild = new SitesParseService(attr, site, mainPage);
+        SitesParseService newChild = new SitesParseService(attr, site, mainPage, pageRepository, siteRepository, config, pageId);
         newChild.fork();
         children.add(newChild);
     }
 
     private boolean typeElementControl(String pathPage) {
-        return !WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
+        List<String> WRONG_TYPES = Arrays.asList(
+                "jpeg", "jpg", "pdf",
+                "png", "gif", "zip",
+                "tar", "jar", "gz",
+                "svg", "ppt", "pptx");
+        if (!WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1))) return true;
+        else return false;
     }
 
     private void addPage(Connection.Response response, Document parse) {
