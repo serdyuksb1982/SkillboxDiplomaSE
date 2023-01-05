@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Getter
 public class SitesParseService extends RecursiveTask<Integer> {
-    private Set<String> websites = new CopyOnWriteArraySet<>();
+    private static Set<String> websites = new CopyOnWriteArraySet<>();
 
     private AtomicInteger pageId;
     private String mainPage = new String("");
