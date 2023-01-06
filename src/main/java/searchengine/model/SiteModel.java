@@ -1,7 +1,7 @@
-package searchengine.dto.statistics.model;
+package searchengine.model;
 
 import lombok.*;
-import searchengine.dto.statistics.emum.Status;
+import searchengine.dto.statistics.enums.Status;
 
 import javax.persistence.*;
 import java.util.Date;

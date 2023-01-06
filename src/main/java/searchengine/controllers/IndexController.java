@@ -9,18 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import searchengine.services.StatisticsServiceImpl;
+import searchengine.services.IndexingService;
 
 @RequestMapping
 @RestController
 @RequiredArgsConstructor
 public class IndexController {
 
-    private final StatisticsServiceImpl statisticsService;
+    private final IndexingService statisticsService;
 
     @ApiOperation("Start parsing web")
-    @GetMapping("/start")
-    public ResponseEntity<String> startWebParsing() {
+    @GetMapping("/startIndexing")
+    public ResponseEntity<String> startIndexing() {
         boolean isStarted = statisticsService.startParse();
         JSONObject response = new JSONObject();
         try {
@@ -37,8 +37,8 @@ public class IndexController {
     }
 
     @ApiOperation("Stop parsing web")
-    @GetMapping("/stop")
-    public ResponseEntity<String> stopWebParsing() {
+    @GetMapping("/stopIndexing")
+    public ResponseEntity<String> stopIndexing() {
         boolean isStopped = statisticsService.stopParse();
 
         JSONObject response = new JSONObject();

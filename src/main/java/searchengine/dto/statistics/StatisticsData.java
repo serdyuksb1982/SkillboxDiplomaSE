@@ -3,7 +3,7 @@ package searchengine.dto.statistics;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import searchengine.dto.statistics.model.SiteModel;
+import searchengine.model.SiteModel;
 
 import java.util.List;
 

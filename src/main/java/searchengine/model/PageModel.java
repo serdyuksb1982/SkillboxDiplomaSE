@@ -1,4 +1,4 @@
-package searchengine.dto.statistics.model;
+package searchengine.model;
 
 import lombok.*;
 

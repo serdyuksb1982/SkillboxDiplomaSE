@@ -1,4 +1,4 @@
-package searchengine.dto.statistics.emum;
+package searchengine.dto.statistics.enums;
 
 public enum Status {
     INDEXING,

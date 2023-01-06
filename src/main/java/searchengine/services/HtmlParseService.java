@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import searchengine.config.SitesList;
 
-import searchengine.dto.statistics.model.PageModel;
-import searchengine.dto.statistics.model.SiteModel;
-import searchengine.dto.statistics.emum.Status;
+import searchengine.model.PageModel;
+import searchengine.model.SiteModel;
+import searchengine.dto.statistics.enums.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Getter
-public class SitesParseService extends RecursiveTask<Integer> {
+public class HtmlParseService extends RecursiveTask<Integer> {
     private static Set<String> websites = new CopyOnWriteArraySet<>();
 
     private AtomicInteger pageId;
@@ -39,17 +39,17 @@ public class SitesParseService extends RecursiveTask<Integer> {
     private SitesList config;
 
     private Integer pageCount;
-    private final List<SitesParseService> pageChildren;
+    private final List<HtmlParseService> pageChildren;
     private String startPage;
     private final SiteModel site;
 
-    public SitesParseService(String startPage,
-                             SiteModel site,
-                             String mainPage,
-                             PageRepository pageRepository,
-                             SiteRepository siteRepository,
-                             SitesList config,
-                             AtomicInteger pageId) {
+    public HtmlParseService(String startPage,
+                            SiteModel site,
+                            String mainPage,
+                            PageRepository pageRepository,
+                            SiteRepository siteRepository,
+                            SitesList config,
+                            AtomicInteger pageId) {
         this.startPage = startPage;
         this.site = site;
         this.pageRepository = pageRepository;
@@ -64,11 +64,11 @@ public class SitesParseService extends RecursiveTask<Integer> {
         }
     }
 
-    public SitesParseService(String startPage,
-                             SiteModel site,
-                             SitesList config,
-                             SiteRepository siteRepository,
-                             PageRepository pageRepository) {
+    public HtmlParseService(String startPage,
+                            SiteModel site,
+                            SitesList config,
+                            SiteRepository siteRepository,
+                            PageRepository pageRepository) {
         this.startPage = startPage;
         this.site = site;
         pageChildren = new ArrayList<>();
@@ -128,7 +128,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
                 site.setStatus(Status.FAILED);
                 siteRepository.save(site);
             }
-            for (SitesParseService it : pageChildren) {
+            for (HtmlParseService it : pageChildren) {
                 pageCount += it.join();
             }
         }
@@ -137,7 +137,7 @@ public class SitesParseService extends RecursiveTask<Integer> {
 
     private void newChild(String attr) {
         websites.add(attr);
-        SitesParseService newChild = new SitesParseService(attr, site, mainPage, pageRepository, siteRepository, config, pageId);
+        HtmlParseService newChild = new HtmlParseService(attr, site, mainPage, pageRepository, siteRepository, config, pageId);
         newChild.fork();
         pageChildren.add(newChild);
     }
