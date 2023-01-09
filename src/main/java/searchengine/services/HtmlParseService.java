@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import searchengine.config.SitesList;
 
-import searchengine.model.PageModel;
-import searchengine.model.SiteModel;
+import searchengine.model.Page;
+import searchengine.model.Site;
 import searchengine.dto.statistics.enums.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
@@ -33,18 +33,18 @@ public class HtmlParseService extends RecursiveTask<Integer> {
     private static Set<String> websites = new CopyOnWriteArraySet<>();
 
     private AtomicInteger pageId;
-    private String mainPage = new String("");
+    private String mainPage = "";
     private PageRepository pageRepository;
     private SiteRepository siteRepository;
-    private SitesList config;
+    private final SitesList sitesListConfig;
 
     private Integer pageCount;
     private final List<HtmlParseService> pageChildren;
     private String startPage;
-    private final SiteModel site;
+    private final Site site;
 
     public HtmlParseService(String startPage,
-                            SiteModel site,
+                            Site site,
                             String mainPage,
                             PageRepository pageRepository,
                             SiteRepository siteRepository,
@@ -54,7 +54,7 @@ public class HtmlParseService extends RecursiveTask<Integer> {
         this.site = site;
         this.pageRepository = pageRepository;
         this.siteRepository = siteRepository;
-        this.config = config;
+        this.sitesListConfig = config;
         this.pageId = pageId;
         pageChildren = new ArrayList<>();
         pageCount = 0;
@@ -65,7 +65,7 @@ public class HtmlParseService extends RecursiveTask<Integer> {
     }
 
     public HtmlParseService(String startPage,
-                            SiteModel site,
+                            Site site,
                             SitesList config,
                             SiteRepository siteRepository,
                             PageRepository pageRepository) {
@@ -83,7 +83,7 @@ public class HtmlParseService extends RecursiveTask<Integer> {
 
         if (this.siteRepository == null) this.siteRepository = siteRepository;
 
-        this.config = config;
+        this.sitesListConfig = config;
     }
 
     @Override
@@ -98,13 +98,13 @@ public class HtmlParseService extends RecursiveTask<Integer> {
 
                     Connection.Response response = Jsoup.connect(startPage)
                             .ignoreHttpErrors(true)
-                            .userAgent(config.getUserAgent())
-                            .referrer(config.getReferrer())
+                            .userAgent(sitesListConfig.getUserAgent())
+                            .referrer(sitesListConfig.getReferrer())
                             .execute();
 
                     Document document = response.parse();
 
-                    Thread.sleep(1000);
+                    Thread.sleep(500);
 
                     addNewSitePage(response, document);
 
@@ -137,7 +137,7 @@ public class HtmlParseService extends RecursiveTask<Integer> {
 
     private void newChild(String attr) {
         websites.add(attr);
-        HtmlParseService newChild = new HtmlParseService(attr, site, mainPage, pageRepository, siteRepository, config, pageId);
+        HtmlParseService newChild = new HtmlParseService(attr, site, mainPage, pageRepository, siteRepository, sitesListConfig, pageId);
         newChild.fork();
         pageChildren.add(newChild);
     }
@@ -154,9 +154,9 @@ public class HtmlParseService extends RecursiveTask<Integer> {
         else return false;
     }
 
-    private PageModel addNewSitePage(Connection.Response response, Document parse) {
-        PageModel page = pageRepository.findByPath(startPage);
-        if (page == null) page = new PageModel();
+    private Page addNewSitePage(Connection.Response response, Document parse) {
+        Page page = pageRepository.findByPath(startPage);
+        if (page == null) page = new Page();
 
         page.setCode(response.statusCode());
         page.setPath(startPage);
@@ -166,4 +166,5 @@ public class HtmlParseService extends RecursiveTask<Integer> {
         pageRepository.save(page);
         return page;
     }
+
 }

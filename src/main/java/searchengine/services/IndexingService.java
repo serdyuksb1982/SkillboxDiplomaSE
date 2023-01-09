@@ -1,10 +1,10 @@
 package searchengine.services;
 
 import org.springframework.stereotype.Service;
-import searchengine.config.Site;
+import searchengine.config.SiteConfiguration;
 import searchengine.config.SitesList;
 import searchengine.dto.statistics.enums.Status;
-import searchengine.model.SiteModel;
+import searchengine.model.Site;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
@@ -21,16 +21,17 @@ public class IndexingService {
     private List<Thread> threads = new ArrayList<>();
 
     private List<ForkJoinPool> forkJoinPools = new ArrayList<>();
-    private final SitesList config;
+    private SitesList sitesListConfig;
 
-    public IndexingService(PageRepository pageRepository, SiteRepository siteRepository, SitesList config) {
+    public IndexingService(PageRepository pageRepository, SiteRepository siteRepository, SitesList sitesList) {
         this.pageRepository = pageRepository;
         this.siteRepository = siteRepository;
-        this.config = config;
+        this.sitesListConfig = sitesList;
     }
 
-    private HtmlParseService initParseWebSite(SiteModel site) {
-        return new HtmlParseService(site.getUrl(), site, config, siteRepository, pageRepository);
+    private HtmlParseService initParseWebSite(Site site) {
+        HtmlParseService htmlParseService = new HtmlParseService(site.getUrl(), site, sitesListConfig, siteRepository, pageRepository);
+        return htmlParseService;
     }
 
     public void indexing() {
@@ -41,22 +42,24 @@ public class IndexingService {
         siteRepository.deleteAll();
 
         List<HtmlParseService> sitesParses = new ArrayList<>();
-        List<Site> sites = config.getSites();
+        List<SiteConfiguration> sites = sitesListConfig.getSites();
+
         List<String> urls = new ArrayList<>();
-        for (Site site : sites) {
+        for (SiteConfiguration site : sites) {
             urls.add(site.getUrl());
         }
+
         List<String> namesUrl = new ArrayList<>();
-        for (Site site : sites) {
+        for (SiteConfiguration site : sites) {
             namesUrl.add(site.getName());
         }
 
         for (int i = 0; i < urls.size(); i++) {
             String currentSitePage = urls.get(i);
 
-            SiteModel site = siteRepository.findSiteByUrl(currentSitePage);
+            Site site = siteRepository.findSiteByUrl(currentSitePage);
             if (site == null) {
-                site = new SiteModel();
+                site = new Site();
             }
             site.setUrl(currentSitePage);
             site.setStatusTime(new Date());
@@ -73,12 +76,13 @@ public class IndexingService {
             threads.add(new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    SiteModel site = parse.getSite();
+                    Site site = parse.getSite();
 
                     try {
                         site.setStatus(Status.INDEXING);
                         siteRepository.save(site);
                         ForkJoinPool tasksForThreads = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+                        System.out.println(tasksForThreads + " Treads");
                         forkJoinPools.add(tasksForThreads);
                         tasksForThreads.execute(parse);
                         site.setStatus(Status.INDEXED);
@@ -100,12 +104,14 @@ public class IndexingService {
         for (ForkJoinPool forkJoinPool : forkJoinPools) {
             forkJoinPool.shutdown();
         }
+
     }
 
-    public boolean startParse() {
+    public boolean startIndexing() {
+
         AtomicBoolean isStartedIndexing = new AtomicBoolean(false);
 
-        for (SiteModel site : siteRepository.findAll()) {
+        for (Site site : siteRepository.findAll()) {
             if (site.getStatus().equals(Status.INDEXING)) {
                 isStartedIndexing.set(true);
             }
@@ -113,34 +119,32 @@ public class IndexingService {
         if (isStartedIndexing.get()) {
             return true;
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                IndexingService.this.indexing();
-            }
-        }).start();
+        new Thread(this::indexing).start();
+        System.out.println(Thread.activeCount() + " Threads ");
+
         return false;
     }
 
-    public boolean stopParse() {
-        //TODO mutex
-        AtomicBoolean isStoppedIndexing = new AtomicBoolean(false);
-        for (SiteModel siteModel : siteRepository.findAll()) {
-            if (siteModel.getStatus().equals(Status.INDEXING)) {
-                isStoppedIndexing.set(true);
+
+    public boolean stopIndexing() {
+        System.out.println("Потоков работает: " + threads.size());
+        AtomicBoolean isIndexing = new AtomicBoolean(false);
+        for (Site site : siteRepository.findAll()) {
+            if (site.getStatus().equals(Status.INDEXING) || site.getStatus().equals(Status.INDEXED) || site.getStatus().equals(Status.FAILED)) {
+                isIndexing.set(true);
             }
         }
-        if (!isStoppedIndexing.get()) {
+        if (!isIndexing.get()) {
             return true;
         }
         for (ForkJoinPool forkJoinPool : forkJoinPools) {
-            forkJoinPool.shutdown();
+            forkJoinPool.shutdownNow();
         }
         for (Thread thread : threads) {
             thread.interrupt();
         }
-        for (SiteModel site : siteRepository.findAll()) {
-            site.setLastError("Inform error message. Stop parsing site: ".concat(site.getName()).concat(", last error: ").concat(site.getLastError()) );
+        for (Site site : siteRepository.findAll()) {
+            site.setLastError("Остановка индексации");
             site.setStatus(Status.FAILED);
             siteRepository.save(site);
         }
@@ -148,5 +152,4 @@ public class IndexingService {
         forkJoinPools.clear();
         return false;
     }
-
 }

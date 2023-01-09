@@ -3,14 +3,17 @@ package searchengine.dto.statistics;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import searchengine.model.SiteModel;
+import searchengine.model.Site;
+
 
 import java.util.List;
 
 @Data
 @Getter@Setter
-public class StatisticsData {
+public class Statistic {
     private TotalStatistics total;
-    private List<SiteModel> detailed;
-
+    private List<Site> detailed;
+    public void addDetailed(Site site) {
+        detailed.add(site);
+    }
 }

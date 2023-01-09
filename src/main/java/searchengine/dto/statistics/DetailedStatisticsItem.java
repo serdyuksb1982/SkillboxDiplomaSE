@@ -1,4 +1,5 @@
 package searchengine.dto.statistics;
+/*
 
 import lombok.Data;
 
@@ -12,3 +13,4 @@ public class DetailedStatisticsItem {
     private int pages;
     private int lemmas;
 }
+*/

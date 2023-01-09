@@ -6,28 +6,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.StatisticServiceImpl;
+import searchengine.dto.statistics.StatisticData;
+import searchengine.services.StatisticService;
 
 @RestController
 @RequestMapping("/api")
 public class ApiController {
 
     //private final StatisticsServiceImpl statisticsService;
-    private final StatisticServiceImpl statisticsService;
+    private final StatisticService statisticsService;
 
-    public ApiController(StatisticServiceImpl initParserService) {
-        this.statisticsService = initParserService;
-    }
-
-    /*public ApiController(StatisticsServiceImpl service) {
+    public ApiController(StatisticService service) {
         this.statisticsService = service;
-    }*/
+    }
 
 
     @ApiOperation("Get all statistics")
     @GetMapping("/statistics")
-    public ResponseEntity<StatisticsResponse> statistics() {
-        return ResponseEntity.ok(statisticsService.getStatistics());
+    public ResponseEntity<StatisticData> getStatistics() {
+        return ResponseEntity.ok().body(statisticsService.getStatistics());
     }
 }

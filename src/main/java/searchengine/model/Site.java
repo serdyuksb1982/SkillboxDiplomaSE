@@ -13,7 +13,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Data
-public class SiteModel {
+public class Site {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

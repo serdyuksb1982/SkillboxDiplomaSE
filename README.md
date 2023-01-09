@@ -63,9 +63,12 @@ create database search_engine, migrate tables -> flyway;
     hibernate:
       ddl-auto: update
     show-sql: true
+  From Swagger Api  
   mvc:
     path match:
       matching-strategy: ant_path_matcher
+      
+   http://localhost:8080/v2/api-docs   
       
 ***      
 

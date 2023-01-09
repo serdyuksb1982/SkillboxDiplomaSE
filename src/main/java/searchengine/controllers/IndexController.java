@@ -2,6 +2,7 @@ package searchengine.controllers;
 
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -13,15 +14,14 @@ import searchengine.services.IndexingService;
 
 @RequestMapping
 @RestController
-@RequiredArgsConstructor
 public class IndexController {
-
-    private final IndexingService statisticsService;
+    @Autowired
+    private IndexingService indexingService;
 
     @ApiOperation("Start parsing web")
     @GetMapping("/startIndexing")
     public ResponseEntity<String> startIndexing() {
-        boolean isStarted = statisticsService.startParse();
+        boolean isStarted = indexingService.startIndexing();
         JSONObject response = new JSONObject();
         try {
             if(isStarted) {
@@ -39,7 +39,7 @@ public class IndexController {
     @ApiOperation("Stop parsing web")
     @GetMapping("/stopIndexing")
     public ResponseEntity<String> stopIndexing() {
-        boolean isStopped = statisticsService.stopParse();
+        boolean isStopped = indexingService.stopIndexing();
 
         JSONObject response = new JSONObject();
         try {
@@ -48,10 +48,12 @@ public class IndexController {
                 response.put("error", "Parsing stopped!");
             } else {
                 response.put("result", true);
+
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
+
         return new ResponseEntity<>(response.toString(), HttpStatus.OK);
     }
 }
