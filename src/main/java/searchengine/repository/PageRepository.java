@@ -12,7 +12,6 @@ import java.util.List;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
 
-
     Integer countBySite(Site site);
 
     Page findByPath(String path);

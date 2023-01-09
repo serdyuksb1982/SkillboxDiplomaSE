@@ -6,6 +6,7 @@ import lombok.Setter;
 import searchengine.model.Site;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -13,6 +14,10 @@ import java.util.List;
 public class Statistic {
     private TotalStatistics total;
     private List<Site> detailed;
+
+    public Statistic() {
+        detailed = new ArrayList<>();
+    }
     public void addDetailed(Site site) {
         detailed.add(site);
     }
