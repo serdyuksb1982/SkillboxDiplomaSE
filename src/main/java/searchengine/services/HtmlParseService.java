@@ -13,7 +13,7 @@ import searchengine.config.SitesList;
 
 import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.dto.statistics.enums.Status;
+import searchengine.model.enums.Status;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
 
@@ -165,6 +165,29 @@ public class HtmlParseService extends RecursiveTask<Integer> {
 
         pageRepository.save(page);
         return page;
+    }
+
+    public void addPage() throws IOException {
+        Connection.Response response = Jsoup.connect(startPage)
+                .userAgent(sitesListConfig.getUserAgent())
+                .referrer(sitesListConfig.getReferrer())
+                .ignoreHttpErrors(true)
+                .execute();
+
+        addPage(response, response.parse());
+    }
+
+    private void addPage(Connection.Response response, Document document) {
+        Page page = pageRepository.findByPath(startPage);
+        if (page == null) {
+            page = new Page();
+        }
+        page.setCode(response.statusCode());
+        page.setPath(startPage);
+        page.setContent(document.html());
+        page.setSite(site);
+
+        pageRepository.save(page);
     }
 
 }

@@ -3,7 +3,7 @@ package searchengine.services;
 import org.springframework.stereotype.Service;
 import searchengine.config.SiteConfiguration;
 import searchengine.config.SitesList;
-import searchengine.dto.statistics.enums.Status;
+import searchengine.model.enums.Status;
 import searchengine.model.Site;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;

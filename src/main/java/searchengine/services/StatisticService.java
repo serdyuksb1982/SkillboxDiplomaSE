@@ -18,7 +18,6 @@ public class StatisticService {
 
     private final PageRepository pageRepository;
 
-
     private StatisticService(SiteRepository siteRepository, PageRepository pageRepository) {
         this.siteRepository = siteRepository;
         this.pageRepository = pageRepository;

@@ -12,9 +12,9 @@ import java.util.List;
 @Data
 @Getter@Setter
 public class Statistic {
+
     private TotalStatistics total;
     private List<Site> detailed;
-
     public Statistic() {
         detailed = new ArrayList<>();
     }
