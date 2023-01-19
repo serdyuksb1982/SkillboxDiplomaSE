@@ -19,4 +19,7 @@ public interface LemmaRepository extends JpaRepository<LemmaEntity, Long> {
     @Query(value = "SELECT l.* from Lemma l where l.lemma = :lemma order by frequency", nativeQuery = true)
     List<LemmaEntity> findByLemma(@Param("lemma") String lemma);
 
+    @Query(value = "select l.* from Lemma l where l.lemma in :lemmas and l.site_id = :site", nativeQuery = true)
+    List<LemmaEntity> findLemmaEntityBySite(@Param("lemmas") List<String> lemmaListBySite);
+
 }

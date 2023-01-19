@@ -28,6 +28,13 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
+    <repositories>
+        <repository>
+            <id>org.apache.lucene.morphology</id>
+            <name>local lucene morphology repository</name>
+            <url>file:${project.basedir}\lib</url>
+        </repository>
+    </repositories>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -89,15 +96,53 @@
             <version>3.0.0</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-mysql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>russian</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/russian-1.5.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>english</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/english-1.5.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>morphology</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/morphology-1.5.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>dictionary-reader</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/dictionary-reader-1.5.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>morph</artifactId>
+            <version>1.5-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/morph-1.5.jar</systemPath>
+        </dependency>
         <!--<dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
