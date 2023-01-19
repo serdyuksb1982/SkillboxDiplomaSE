@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Data
 @Getter@Setter
-public class StatisticData {
+public class StatisticsResponse {
     private boolean result;
-    private Statistic statistics;
+    private StatisticsData statistics;
 }

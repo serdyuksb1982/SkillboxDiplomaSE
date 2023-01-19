@@ -7,13 +7,11 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "site")
 @Getter
 @Setter
 @Data
-public class Site {
+public class SiteEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

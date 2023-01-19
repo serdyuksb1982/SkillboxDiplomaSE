@@ -3,10 +3,14 @@ package searchengine.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import searchengine.model.Site;
+import searchengine.model.SiteEntity;
 
 @Repository
-public interface SiteRepository extends JpaRepository<Site, Integer> {
+public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
 
-    Site findSiteByUrl(String url);
+    SiteEntity findSiteByUrl(String url);
+
+    SiteEntity findByUrl(String url);
+
+
 }
