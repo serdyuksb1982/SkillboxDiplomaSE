@@ -37,4 +37,10 @@ public class PageEntity implements Serializable {
     @OneToMany(mappedBy = "page", cascade = CascadeType.ALL)
     private List<IndexEntity> index = new LinkedList<>();
 
+    public PageEntity(SiteEntity siteId, String path, int code, String content) {
+        this.siteId = siteId;
+        this.path = path;
+        this.code = code;
+        this.content = content;
+    }
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 @Slf4j
 @Getter
-public class WordsLemmaConvertor {
+public class LemmaIndex {
 
     private final PageRepository pageRepository;
 
@@ -29,7 +29,7 @@ public class WordsLemmaConvertor {
 
     private List<LemmaDto> lemmaDto;
 
-    public void getConvert(SiteEntity site) {
+    public void call(SiteEntity site) {
         lemmaDto = new CopyOnWriteArrayList<>();
         Iterable<PageEntity> pageList = pageRepository.findAll();
         Map<String, Integer> lemmaList = new TreeMap<>();

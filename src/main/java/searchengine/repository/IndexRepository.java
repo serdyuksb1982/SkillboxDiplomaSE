@@ -12,13 +12,12 @@ import java.util.List;
 
 @Repository
 public interface IndexRepository extends JpaRepository<IndexEntity, Long> {
+    @Query(value = "SELECT i.* FROM Words_index i WHERE i.lemma_id IN :lemmas AND i.page_id IN :pages", nativeQuery = true)
+    List<IndexEntity> findByPagesAndLemmas(@Param("lemmas") List<LemmaEntity> lemmaListId,
+                                           @Param("pages") List<PageEntity> pageListId);
 
-    IndexEntity findByLemmaIdAndPageId(long lemmaId, long pageId);
-
-    List<IndexEntity> findByPageId(long pageId);
-
-    @Query(value = "select p.* from words_index p where p.lemma_id in :lemmas and p.page_id in :pages", nativeQuery = true)
-    List<IndexEntity> findByPageAndLemma(@Param("lemmas")List<LemmaEntity> lemmaEntityListId,
-                                         @Param("pages")List<PageEntity> pageEntityListId);
+    List<IndexEntity> findByLemmaId (long lemmaId);
+    List<IndexEntity> findByPageId (long pageId);
+    IndexEntity findByLemmaIdAndPageId (long lemmaId, long pageId);
 
 }

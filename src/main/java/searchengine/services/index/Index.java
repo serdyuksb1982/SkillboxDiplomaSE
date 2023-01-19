@@ -1,5 +1,6 @@
 package searchengine.services.index;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -18,7 +19,8 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
-public class PageIndexEngine {
+@Getter
+public class Index {
 
     private final PageRepository pageRepository;
 
@@ -28,7 +30,7 @@ public class PageIndexEngine {
 
     private List<IndexDto> indexDtoList;
 
-    public void run(SiteEntity site) {
+    public void call(SiteEntity site) {
         Iterable<PageEntity> pageList = pageRepository.findBySiteId(site);
         List<LemmaEntity> lemmaList = lemmaRepository.findBySiteEntityId(site);
         indexDtoList = new ArrayList<>();
@@ -37,8 +39,8 @@ public class PageIndexEngine {
             if (page.getCode() < 400) {
                 long pageId = page.getId();
                 String content = page.getContent();
-                String title = clear(content, "title");
-                String body = clear(content, "body");
+                String title = clearCode(content, "title");
+                String body = clearCode(content, "body");
                 HashMap<String, Integer> titleList = lemmaHtmlEngin.getLemmaList(title);
                 HashMap<String, Integer> bodyList = lemmaHtmlEngin.getLemmaList(body);
 
@@ -67,10 +69,10 @@ public class PageIndexEngine {
 
     }
 
-    public static String clear(String content, String selector) {
+    public static String clearCode(String content, String tag) {
         StringBuilder html = new StringBuilder();
         var doc = Jsoup.parse(content);
-        var elements = doc.select(selector);
+        var elements = doc.select(tag);
         for (Element el : elements) {
             html.append(el.html());
         }

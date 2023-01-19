@@ -15,14 +15,14 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 
 @Slf4j
-public class PagesConverter extends RecursiveTask<List<PageDto>> {
+public class PagesIndex extends RecursiveTask<List<PageDto>> {
     private final String url;
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
 
     private final SitesList sitesList;
 
-    public PagesConverter(String url, List<String> urlList, List<PageDto> pageDtoList, SitesList sitesList) {
+    public PagesIndex(String url, List<String> urlList, List<PageDto> pageDtoList, SitesList sitesList) {
         this.url = url;
         this.urlList = urlList;
         this.pageDtoList = pageDtoList;
@@ -49,13 +49,13 @@ public class PagesConverter extends RecursiveTask<List<PageDto>> {
             PageDto pageDto = new PageDto(url, html, status);
             pageDtoList.add(pageDto);
             Elements elements = doc.select("body").select("a");
-            List<PagesConverter> taskList = new ArrayList<>();
+            List<PagesIndex> taskList = new ArrayList<>();
             for (Element el : elements) {
                 String link = el.attr("abs:href");
                 if (link.startsWith(el.baseUri()) && !link.equals(el.baseUri()) && !link.contains("#") && !link.contains(".pdf") && !link.contains(".jpg") && !link.contains(".JPG") && !link.contains(".png") && !urlList.contains(link)) {
 
                     urlList.add(link);
-                    PagesConverter task = new PagesConverter(link,urlList, pageDtoList, sitesList);
+                    PagesIndex task = new PagesIndex(link,urlList, pageDtoList, sitesList);
                     task.fork();
                     taskList.add(task);
                 }

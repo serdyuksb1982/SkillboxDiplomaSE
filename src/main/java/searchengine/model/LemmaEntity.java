@@ -30,4 +30,10 @@ public class LemmaEntity {
 
     private int frequency;
 
+    public LemmaEntity(String lemma, int frequency, SiteEntity siteEntityId) {
+        this.lemma = lemma;
+        this.frequency = frequency;
+        this.siteEntityId = siteEntityId;
+    }
+
 }
