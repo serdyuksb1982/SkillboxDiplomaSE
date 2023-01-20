@@ -11,7 +11,7 @@ import java.util.Locale;
 
 @Component
 @Slf4j
-public class LemmaHtmlEngin {
+public class LemmaEngine {
 
     private final static String regex = "\\p{Punct}|[0-9]|@|©|◄|»|«|—|-|№|…";
 
@@ -51,22 +51,6 @@ public class LemmaHtmlEngin {
             log.debug( "Символ не найден - " + word);
         }
         return lemmaList;
-    }
-
-    public List<Integer> findLemmaIndexInText(String content, String lemma) {
-        List<Integer> lemmaIndexList = new ArrayList<>();
-        String[] elements = content.toLowerCase(Locale.ROOT).split("\\p{Punct}|\\s");
-        int index = 0;
-        for (String el : elements) {
-            List<String> lemmas = getLemma(el);
-            for (String lem : lemmas) {
-                if (lem.equals(lemma)) {
-                    lemmaIndexList.add(index);
-                }
-            }
-            index += el.length() + 1;
-        }
-        return lemmaIndexList;
     }
 
     private boolean isServiceWord(String word) {

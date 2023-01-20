@@ -11,24 +11,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.repository.SiteRepository;
-import searchengine.services.IndexService;
-import searchengine.services.StatisticService;
+import searchengine.services.IndexingService;
+import searchengine.services.StatisticsService;
 
 @RestController
 @RequestMapping("/api")
 @Slf4j
 @Tag(name = "API контролер поискового движка", description = "Индексация всех страниц, переиндексация отдельного сайта, " + "остановка индексации, поиск, статистика по сайтам")
 public class ApiController {
-    private final StatisticService statisticsService;
-    private final IndexService indexingService;
-    private final SiteRepository siteRepository;
+    private final StatisticsService statisticsService;
+    private final IndexingService indexingService;
 
-    public ApiController(StatisticService statisticsService, IndexService indexingService, SiteRepository siteRepository) {
+    public ApiController(StatisticsService statisticsService, IndexingService indexingService) {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
-        this.siteRepository = siteRepository;
     }
+    //private final SiteRepository siteRepository;
+
+
 
 
     @ApiOperation("Get all statistics")

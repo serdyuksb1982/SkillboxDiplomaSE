@@ -1,14 +1,11 @@
 package searchengine.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Data
 @AllArgsConstructor
-@Getter
-@Setter
 public class IndexDto {
-    private Long pageId;
-    private Long lemmaId;
+    private Long pageID;
+    private Long lemmaID;
     private Float rank;
 }

@@ -2,10 +2,11 @@ package searchengine.dto.statistics;
 
 import lombok.*;
 
-@Value
+@Data
+@AllArgsConstructor
 public class TotalStatistics {
-    Long sites;
-    Long pages;
-    Long lemmas;
-    boolean indexing;
+    private Long sites;
+    private Long pages;
+    private Long lemmas;
+    private boolean indexing;
 }

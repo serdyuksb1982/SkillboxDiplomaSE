@@ -1,50 +1,50 @@
 package searchengine.services.index;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.springframework.stereotype.Component;
+
 import searchengine.dto.IndexDto;
-import searchengine.lemma.LemmaHtmlEngin;
-import searchengine.model.LemmaEntity;
-import searchengine.model.PageEntity;
-import searchengine.model.SiteEntity;
+import searchengine.lemma.LemmaEngine;
+import searchengine.model.LemmaModel;
+import searchengine.model.PageModel;
+import searchengine.model.SiteModel;
+
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Component
 @RequiredArgsConstructor
 @Slf4j
-@Getter
-public class Index {
-
+public class Indexing  {
     private final PageRepository pageRepository;
-
     private final LemmaRepository lemmaRepository;
-
-    private final LemmaHtmlEngin lemmaHtmlEngin;
-
+    private final LemmaEngine morphology;
     private List<IndexDto> indexDtoList;
 
-    public void call(SiteEntity site) {
-        Iterable<PageEntity> pageList = pageRepository.findBySiteId(site);
-        List<LemmaEntity> lemmaList = lemmaRepository.findBySiteEntityId(site);
+
+    public void run(SiteModel site) {
+        Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
+        List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
         indexDtoList = new ArrayList<>();
 
-        for (PageEntity page : pageList) {
+        for (PageModel page : pageList) {
             if (page.getCode() < 400) {
                 long pageId = page.getId();
                 String content = page.getContent();
-                String title = clearCode(content, "title");
-                String body = clearCode(content, "body");
-                HashMap<String, Integer> titleList = lemmaHtmlEngin.getLemmaList(title);
-                HashMap<String, Integer> bodyList = lemmaHtmlEngin.getLemmaList(body);
+                String title = clear(content, "title");
+                String body = clear(content, "body");
+                Map<String, Integer> titleList = morphology.getLemmaList(title);
+                Map<String, Integer> bodyList = morphology.getLemmaList(body);
 
-                for (LemmaEntity lemma : lemmaList) {
+                for (LemmaModel lemma : lemmaList) {
                     Long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
@@ -66,13 +66,17 @@ public class Index {
                 log.debug("Bad status code - " + page.getCode());
             }
         }
-
     }
 
-    public static String clearCode(String content, String tag) {
+
+    public List<IndexDto> getIndexList() {
+        return indexDtoList;
+    }
+
+    public  String clear(String content, String selector) {
         StringBuilder html = new StringBuilder();
         var doc = Jsoup.parse(content);
-        var elements = doc.select(tag);
+        var elements = doc.select(selector);
         for (Element el : elements) {
             html.append(el.html());
         }

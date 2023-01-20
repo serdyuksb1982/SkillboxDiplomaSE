@@ -7,18 +7,18 @@ import searchengine.config.SitesList;
 import searchengine.dto.IndexDto;
 import searchengine.dto.LemmaDto;
 import searchengine.dto.PageDto;
-import searchengine.model.IndexEntity;
-import searchengine.model.LemmaEntity;
-import searchengine.model.PageEntity;
-import searchengine.model.SiteEntity;
+import searchengine.model.IndexModel;
+import searchengine.model.LemmaModel;
+import searchengine.model.PageModel;
+import searchengine.model.SiteModel;
 import searchengine.model.enums.Status;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.index.Index;
-import searchengine.services.lemma.LemmaIndex;
-import searchengine.services.pageconvertor.PagesIndex;
+import searchengine.services.index.Indexing;
+import searchengine.services.lemma.LemmaIndexer;
+import searchengine.services.pageconvertor.PageIndexer;
 
 import java.util.Date;
 import java.util.List;
@@ -28,15 +28,17 @@ import java.util.concurrent.ForkJoinPool;
 
 @RequiredArgsConstructor
 @Slf4j
-public class SiteIndex implements Runnable {
+public class SiteIndexed implements Runnable {
+
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
-    private final LemmaIndex lemmaParser;
-    private final Index indexParser;
+    private final LemmaIndexer lemmaParser;
+    private final Indexing indexParser;
     private final String url;
     private final SitesList sitesList;
+
 
     @Override
     public void run() {
@@ -65,20 +67,20 @@ public class SiteIndex implements Runnable {
             List<PageDto> pageDtoVector = new Vector<>();
             List<String> urlList = new Vector<>();
             ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-            List<PageDto> pages = forkJoinPool.invoke(new PagesIndex(urlFormat,urlList, pageDtoVector, sitesList ));
+            List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urlFormat, pageDtoVector, urlList));
             return new CopyOnWriteArrayList<>(pages);
         } else throw new InterruptedException();
     }
 
     private void saveToBase(List<PageDto> pages) throws InterruptedException {
         if (!Thread.interrupted()) {
-            List<PageEntity> pageList = new CopyOnWriteArrayList<>();
-            SiteEntity site = siteRepository.findByUrl(url);
+            List<PageModel> pageList = new CopyOnWriteArrayList<>();
+            SiteModel site = siteRepository.findByUrl(url);
 
             for (PageDto page : pages) {
                 int start = page.getUrl().indexOf(url) + url.length();
                 String pageFormat = page.getUrl().substring(start);
-                pageList.add(new PageEntity(site, pageFormat, page.getCode(),
+                pageList.add(new PageModel(site, pageFormat, page.getCode(),
                         page.getContent()));
             }
             pageRepository.flush();
@@ -90,14 +92,14 @@ public class SiteIndex implements Runnable {
 
     private void getLemmasPage() {
         if (!Thread.interrupted()) {
-            SiteEntity siteEntity = siteRepository.findByUrl(url);
-            siteEntity.setStatusTime(new Date());
-            lemmaParser.call(siteEntity);
-            List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDto();
-            List<LemmaEntity> lemmaList = new CopyOnWriteArrayList<>();
+            SiteModel siteModel = siteRepository.findByUrl(url);
+            siteModel.setStatusTime(new Date());
+            lemmaParser.run(siteModel);
+            List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
+            List<LemmaModel> lemmaList = new CopyOnWriteArrayList<>();
 
             for (LemmaDto lemmaDto : lemmaDtoList) {
-                lemmaList.add(new LemmaEntity(lemmaDto.getName(), lemmaDto.getFrequency(), siteEntity));
+                lemmaList.add(new LemmaModel(lemmaDto.getLemma(), lemmaDto.getFrequency(), siteModel));
             }
             lemmaRepository.flush();
             lemmaRepository.saveAll(lemmaList);
@@ -108,15 +110,15 @@ public class SiteIndex implements Runnable {
 
     private void indexingWords() throws InterruptedException {
         if (!Thread.interrupted()) {
-            SiteEntity site = siteRepository.findByUrl(url);
-            indexParser.call(site);
-            List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexDtoList());
-            List<IndexEntity> indexList = new CopyOnWriteArrayList<>();
+            SiteModel site = siteRepository.findByUrl(url);
+            indexParser.run(site);
+            List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
+            List<IndexModel> indexList = new CopyOnWriteArrayList<>();
             site.setStatusTime(new Date());
             for (IndexDto indexDto : indexDtoList) {
-                PageEntity page = pageRepository.getById(indexDto.getPageId());
-                LemmaEntity lemma = lemmaRepository.getById(indexDto.getPageId());
-                indexList.add(new IndexEntity(page, lemma, indexDto.getRank()));
+                PageModel page = pageRepository.getById(indexDto.getPageID());
+                LemmaModel lemma = lemmaRepository.getById(indexDto.getLemmaID());
+                indexList.add(new IndexModel(page, lemma, indexDto.getRank()));
             }
             indexRepository.flush();
             indexRepository.saveAll(indexList);
@@ -131,7 +133,7 @@ public class SiteIndex implements Runnable {
     }
 
     private void deleteDataFromSite() {
-        SiteEntity site = siteRepository.findByUrl(url);
+        SiteModel site = siteRepository.findByUrl(url);
         site.setStatus(Status.INDEXING);
         site.setName(getName());
         site.setStatusTime(new Date());
@@ -141,7 +143,7 @@ public class SiteIndex implements Runnable {
     }
 
     private void saveDateSite() {
-        SiteEntity site = new SiteEntity();
+        SiteModel site = new SiteModel();
         site.setUrl(url);
         site.setName(getName());
         site.setStatus(Status.INDEXING);
@@ -151,7 +153,7 @@ public class SiteIndex implements Runnable {
     }
 
     private void errorSite() {
-        SiteEntity site = new SiteEntity();
+        SiteModel site = new SiteModel();
         site.setLastError("Индексация остановлена");
         site.setStatus(Status.FAILED);
         site.setStatusTime(new Date());
@@ -168,3 +170,4 @@ public class SiteIndex implements Runnable {
         return "";
     }
 }
+

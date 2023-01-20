@@ -1,14 +1,12 @@
 package searchengine.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.Value;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 public class LemmaDto {
-    private String name;
-
+    private String lemma;
     private int frequency;
 }
