@@ -3,7 +3,9 @@ package searchengine.services.index;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import searchengine.dto.IndexDto;
@@ -26,23 +28,22 @@ import java.util.Map;
 public class Indexing  {
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
-    private final LemmaEngine morphology;
-    private List<IndexDto> indexDtoList;
-
-
+    private final LemmaEngine lemmaEngine;
+    private List<IndexDto> config;
+    
     public void run(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
-        indexDtoList = new ArrayList<>();
+        config = new ArrayList<>();
 
         for (PageModel page : pageList) {
             if (page.getCode() < 400) {
                 long pageId = page.getId();
                 String content = page.getContent();
-                String title = clear(content, "title");
-                String body = clear(content, "body");
-                Map<String, Integer> titleList = morphology.getLemmaList(title);
-                Map<String, Integer> bodyList = morphology.getLemmaList(body);
+                String title = clearCodeFromTag(content, "title");
+                String body = clearCodeFromTag(content, "body");
+                Map<String, Integer> titleList = lemmaEngine.getLemmaList(title);
+                Map<String, Integer> bodyList = lemmaEngine.getLemmaList(body);
 
                 for (LemmaModel lemma : lemmaList) {
                     Long lemmaId = lemma.getId();
@@ -50,14 +51,14 @@ public class Indexing  {
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
                         float totalRank = 0.0F;
                         if (titleList.get(keyWord) != null) {
-                            Float titleRank = Float.valueOf(titleList.get(keyWord));
+                            float titleRank = Float.valueOf(titleList.get(keyWord));
                             totalRank += titleRank;
                         }
                         if (bodyList.get(keyWord) != null) {
                             float bodyRank = (float) (bodyList.get(keyWord) * 0.8);
                             totalRank += bodyRank;
                         }
-                        indexDtoList.add(new IndexDto(pageId, lemmaId, totalRank));
+                        config.add(new IndexDto(pageId, lemmaId, totalRank));
                     } else {
                         log.debug("Lemma not found");
                     }
@@ -70,16 +71,17 @@ public class Indexing  {
 
 
     public List<IndexDto> getIndexList() {
-        return indexDtoList;
+        return config;
     }
 
-    public  String clear(String content, String selector) {
-        StringBuilder html = new StringBuilder();
-        var doc = Jsoup.parse(content);
-        var elements = doc.select(selector);
-        for (Element el : elements) {
-            html.append(el.html());
+    public  String clearCodeFromTag(String content, String s) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Document doc = Jsoup.parse(content);
+        Elements elements = doc.select(s);
+        for (int i = 0; i < elements.size(); i++) {
+            Element el = elements.get(i);
+            stringBuilder.append(el.html());
         }
-        return Jsoup.parse(html.toString()).text();
+        return Jsoup.parse(stringBuilder.toString()).text();
     }
 }

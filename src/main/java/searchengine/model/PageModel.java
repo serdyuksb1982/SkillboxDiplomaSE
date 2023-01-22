@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@Table(name = "page", indexes = @Index(name = "path_list", columnList = "path"))
+@Table(name = "page")
 public class PageModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
@@ -26,8 +26,7 @@ public class PageModel implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private int code;
-    @Column(columnDefinition = "MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-            nullable = false)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 
     @Column(columnDefinition = "VARCHAR(256)", length = 256, nullable = false)
@@ -47,6 +46,5 @@ public class PageModel implements Serializable {
         this.content = content;
     }
     public PageModel() {
-
     }
 }

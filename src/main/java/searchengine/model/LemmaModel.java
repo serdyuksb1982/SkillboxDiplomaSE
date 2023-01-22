@@ -10,7 +10,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@Table(name = "lemma", indexes = {@Index(name = "lemma_list", columnList = "lemma")})
+@Table(name = "lemma")
 public class LemmaModel {
 
     /*id INT NOT NULL AUTO_INCREMENT;
@@ -42,7 +42,6 @@ public class LemmaModel {
     }
 
     public LemmaModel() {
-
     }
 
 }

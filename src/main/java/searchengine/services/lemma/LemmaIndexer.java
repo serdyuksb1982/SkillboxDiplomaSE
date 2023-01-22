@@ -3,7 +3,9 @@ package searchengine.services.lemma;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 import searchengine.dto.LemmaDto;
 import searchengine.lemma.LemmaEngine;
@@ -29,8 +31,8 @@ public class LemmaIndexer {
         TreeMap<String, Integer> lemmaList = new TreeMap<>();
         for (PageModel page : pageList) {
             String content = page.getContent();
-            String title = clear(content, "title");
-            String body = clear(content, "body");
+            String title = clearHtml(content, "title");
+            String body = clearHtml(content, "body");
             HashMap<String, Integer> titleList = morphology.getLemmaList(title);
             HashMap<String, Integer> bodyList = morphology.getLemmaList(body);
             Set<String> allWords = new HashSet<>();
@@ -52,11 +54,12 @@ public class LemmaIndexer {
         return lemmaDtoList;
     }
 
-    public static String clear(String content, String selector) {
+    public static String clearHtml(String content, String tag) {
         StringBuilder html = new StringBuilder();
-        var doc = Jsoup.parse(content);
-        var elements = doc.select(selector);
-        for (Element el : elements) {
+        Document doc = Jsoup.parse(content);
+        Elements elements = doc.select(tag);
+        for (int i = 0; i < elements.size(); i++) {
+            Element el = elements.get(i);
             html.append(el.html());
         }
         return Jsoup.parse(html.toString()).text();

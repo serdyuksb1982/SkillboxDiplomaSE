@@ -47,9 +47,21 @@ public class SiteModel {
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "siteId", cascade = CascadeType.ALL)
-    protected List<PageModel> pageModelList = new ArrayList<>();
+    private List<PageModel> pageModelList = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "siteModelId", cascade = CascadeType.ALL)
-    protected List<LemmaModel> lemmaModelList = new ArrayList<>();
+    private List<LemmaModel> lemmaModelList = new ArrayList<>();
 
+    public SiteModel(Status status, Date statusTime, String lastError, String url, String name, List<PageModel> pageModelList, List<LemmaModel> lemmaModelList) {
+        this.status = status;
+        this.statusTime = statusTime;
+        this.lastError = lastError;
+        this.url = url;
+        this.name = name;
+        this.pageModelList = pageModelList;
+        this.lemmaModelList = lemmaModelList;
+    }
+
+    public SiteModel() {
+    }
 }

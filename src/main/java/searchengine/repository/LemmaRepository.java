@@ -15,12 +15,5 @@ public interface LemmaRepository extends JpaRepository<LemmaModel, Long> {
     long countBySiteModelId(SiteModel site);
 
     List<LemmaModel> findBySiteModelId(SiteModel siteId);
-    @Query(value = "SELECT l.* FROM Lemma l WHERE l.lemma IN :lemmas AND l.site_id = :site", nativeQuery = true)
-    List<LemmaModel> findLemmaListBySite(@Param("lemmas") List<String> lemmaList,
-                                         @Param("site") SiteModel site);
-
-    @Query(value = "SELECT l.* FROM Lemma l WHERE l.lemma = :lemma ORDER BY frequency ASC", nativeQuery = true)
-    List<LemmaModel> findByLemma(@Param("lemma") String lemma);
-
 
 }

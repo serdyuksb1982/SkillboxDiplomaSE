@@ -9,7 +9,4 @@ import searchengine.model.SiteModel;
 public interface SiteRepository extends JpaRepository<SiteModel, Long> {
     SiteModel findByUrl(String url);
 
-    SiteModel findByUrl(SiteModel site);
-    SiteModel findByUrl(long id);
-
 }

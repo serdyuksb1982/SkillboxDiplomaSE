@@ -9,10 +9,7 @@ import java.util.Objects;
 @Entity
 @Getter
 @Setter
-@Table(name = "words_index", indexes = {
-        @Index(name = "page_id_list", columnList = "page_id", unique = true),
-        @Index(name = "lemma_id_list", columnList = "lemma_id")
-})
+@Table(name = "words_index")
 public class IndexModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
@@ -43,6 +40,5 @@ public class IndexModel implements Serializable {
     }
 
     public IndexModel() {
-
     }
 }
