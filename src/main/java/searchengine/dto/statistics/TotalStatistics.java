@@ -1,14 +1,12 @@
 package searchengine.dto.statistics;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
-@Getter@Setter
+@AllArgsConstructor
 public class TotalStatistics {
-    private int sites;
-    private int pages;
-    private int lemmas;
+    private Long sites;
+    private Long pages;
+    private Long lemmas;
     private boolean indexing;
 }
