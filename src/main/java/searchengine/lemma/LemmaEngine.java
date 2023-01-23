@@ -1,35 +1,24 @@
 package searchengine.lemma;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
+import searchengine.config.LemmaConfiguration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.io.IOException;
+import java.util.*;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class LemmaEngine {
+    private final LemmaConfiguration lemmaConfiguration;
 
-    private final static String regex = "\\p{Punct}|[0-9]|@|©|◄|»|«|—|-|№|…";
+    public Map<String, Integer> getLemmaMap(String text) {
 
-    private static RussianLuceneMorphology russianMorph;
-
-    static {
-        try {
-            russianMorph = new RussianLuceneMorphology();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    public HashMap<String, Integer> getLemmaList(String content) {
-        content = content.toLowerCase(Locale.ROOT)
-                .replaceAll(regex, " ");
+        text = arrayContainsRussianWords(text);
         HashMap<String, Integer> lemmaList = new HashMap<>();
-        String[] elements = content.toLowerCase(Locale.ROOT).split("\\s+");
+        String[] elements = text.toLowerCase(Locale.ROOT).split("\\s+");
         for (String el : elements) {
             List<String> wordsList = getLemma(el);
             for (String word : wordsList) {
@@ -43,18 +32,18 @@ public class LemmaEngine {
     public List<String> getLemma(String word) {
         List<String> lemmaList = new ArrayList<>();
         try {
-            List<String> baseRusForm = russianMorph.getNormalForms(word);
-            if (!isServiceWord(word)) {
+            List<String> baseRusForm = lemmaConfiguration.luceneMorphology().getNormalForms(word);
+            if (!word.isEmpty() && !isCorrectWordForm(word)) {
                 lemmaList.addAll(baseRusForm);
             }
         } catch (Exception e) {
-            log.debug( "Символ не найден - " + word);
+            e.getMessage();
         }
         return lemmaList;
     }
 
-    private boolean isServiceWord(String word) {
-        List<String> morphForm = russianMorph.getMorphInfo(word);
+    private boolean isCorrectWordForm(String word) throws IOException {
+        List<String> morphForm = lemmaConfiguration.luceneMorphology().getMorphInfo(word);
         for (String l : morphForm) {
             if (l.contains("ПРЕДЛ")
                     || l.contains("СОЮЗ")
@@ -66,5 +55,10 @@ public class LemmaEngine {
             }
         }
         return false;
+    }
+
+    private String arrayContainsRussianWords(String text) {
+        return text.toLowerCase(Locale.ROOT)
+                .replaceAll("([^а-я\\s])", " ").trim();
     }
 }

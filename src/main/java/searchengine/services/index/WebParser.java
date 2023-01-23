@@ -17,7 +17,6 @@ import searchengine.model.SiteModel;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +24,13 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class Indexing  {
+public class WebParser {
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final LemmaEngine lemmaEngine;
     private List<IndexDto> config;
     
-    public void run(SiteModel site) {
+    public void startWebParser(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
         config = new ArrayList<>();
@@ -42,8 +41,8 @@ public class Indexing  {
                 String content = page.getContent();
                 String title = clearCodeFromTag(content, "title");
                 String body = clearCodeFromTag(content, "body");
-                Map<String, Integer> titleList = lemmaEngine.getLemmaList(title);
-                Map<String, Integer> bodyList = lemmaEngine.getLemmaList(body);
+                Map<String, Integer> titleList = lemmaEngine.getLemmaMap(title);
+                Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
                     Long lemmaId = lemma.getId();
@@ -69,19 +68,17 @@ public class Indexing  {
         }
     }
 
-
-    public List<IndexDto> getIndexList() {
-        return config;
-    }
-
     public  String clearCodeFromTag(String content, String s) {
         StringBuilder stringBuilder = new StringBuilder();
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(s);
-        for (int i = 0; i < elements.size(); i++) {
-            Element el = elements.get(i);
+        for (Element el : elements) {
             stringBuilder.append(el.html());
         }
         return Jsoup.parse(stringBuilder.toString()).text();
+    }
+
+    public List<IndexDto> getIndexList() {
+        return config;
     }
 }

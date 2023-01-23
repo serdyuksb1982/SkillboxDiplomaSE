@@ -21,20 +21,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class LemmaIndexer {
     private final PageRepository pageRepository;
-    private final LemmaEngine morphology;
+    private final LemmaEngine lemmaEngine;
     private List<LemmaDto> lemmaDtoList;
 
 
-    public void run(SiteModel site) {
+    public void startLemmaIndexer() {
         lemmaDtoList = new CopyOnWriteArrayList<>();
         Iterable<PageModel> pageList = pageRepository.findAll();
+
         TreeMap<String, Integer> lemmaList = new TreeMap<>();
         for (PageModel page : pageList) {
             String content = page.getContent();
             String title = clearHtml(content, "title");
             String body = clearHtml(content, "body");
-            HashMap<String, Integer> titleList = morphology.getLemmaList(title);
-            HashMap<String, Integer> bodyList = morphology.getLemmaList(body);
+            Map<String, Integer> titleList = lemmaEngine.getLemmaMap(title);
+            Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
             Set<String> allWords = new HashSet<>();
             allWords.addAll(titleList.keySet());
             allWords.addAll(bodyList.keySet());
@@ -49,11 +50,6 @@ public class LemmaIndexer {
         }
     }
 
-
-    public List<LemmaDto> getLemmaDtoList() {
-        return lemmaDtoList;
-    }
-
     public static String clearHtml(String content, String tag) {
         StringBuilder html = new StringBuilder();
         Document doc = Jsoup.parse(content);
@@ -63,5 +59,9 @@ public class LemmaIndexer {
             html.append(el.html());
         }
         return Jsoup.parse(html.toString()).text();
+    }
+
+    public List<LemmaDto> getLemmaDtoList() {
+        return lemmaDtoList;
     }
 }

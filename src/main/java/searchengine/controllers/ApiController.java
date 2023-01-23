@@ -17,7 +17,6 @@ import searchengine.services.StatisticsService;
 @RestController
 @RequestMapping("/api")
 @Slf4j
-@Tag(name = "API контролер поискового движка", description = "Индексация всех страниц, переиндексация отдельного сайта, " + "остановка индексации, поиск, статистика по сайтам")
 public class ApiController {
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
@@ -26,10 +25,6 @@ public class ApiController {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
     }
-    //private final SiteRepository siteRepository;
-
-
-
 
     @ApiOperation("Get all statistics")
     @GetMapping("/statistics")
@@ -40,7 +35,7 @@ public class ApiController {
     @ApiOperation("Start parsing web")
     @GetMapping("/startIndexing")
     public ResponseEntity<Boolean> startIndexing() {
-        return ResponseEntity.ok(indexingService.indexingAll());
+        return ResponseEntity.ok(indexingService.startIndexing());
     }
 
     @ApiOperation("Stop parsing web")

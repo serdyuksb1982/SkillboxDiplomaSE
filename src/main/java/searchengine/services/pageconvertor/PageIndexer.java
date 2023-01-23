@@ -6,10 +6,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import searchengine.config.SitesList;
 import searchengine.dto.PageDto;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
@@ -20,26 +22,28 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
     private final String url;
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
-
-    public PageIndexer(String url, List<PageDto> pageDtoList, List<String> urlList) {
+    private final SitesList config;
+    public PageIndexer(String url, List<PageDto> pageDtoList, List<String> urlList, SitesList config) {
         this.url = url;
         this.pageDtoList = pageDtoList;
         this.urlList = urlList;
+        this.config = config;
     }
 
     @Override
     protected List<PageDto> compute() {
+
         try {
-            Thread.sleep(150);
+            Thread.sleep(100);
             Document doc = null;
             try {
-                Thread.sleep(150);
+                Thread.sleep(100);
                 doc = Jsoup.connect(url)
-                        .userAgent("Mozilla/5.0 (Windows NT 6.1; rv:98.0) Gecko/20100101 Firefox/98.0")
-                        .referrer("http://www.google.com")
+                        .userAgent(config.getUserAgent())
+                        .referrer(config.getReferrer())
                         .get();
             } catch (Exception e) {
-                log.debug("Не удалось установить подключение с " + url);
+                e.getMessage();
             }
 
 
@@ -54,24 +58,14 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             List<PageIndexer> taskList = new ArrayList<>();
             for (Element el : elements) {
                 String link = el.attr("abs:href");
-                if (link.startsWith(el.baseUri())
-                        && !link.equals(el.baseUri())
-                        && !link.contains("#")
-                        && !link.contains(".pdf")
-                        && !link.contains(".jpg")
-                        && !link.contains(".JPG")
-                        && !link.contains("gz")
-                        && !link.contains("zip")
-                        && !link.contains(".png")
-                        && !link.contains("pptx")
-                        && !link.contains("ppt")
-                        && !link.contains("svg")
-                        && !urlList.contains(link)) {
-
-                    urlList.add(link);
-                    PageIndexer task = new PageIndexer(link, pageDtoList, urlList);
-                    task.fork();
-                    taskList.add(task);
+                if (isSiteElementsType(link)) {
+                    if (link.startsWith(el.baseUri()) && !link.equals(el.baseUri())
+                            && !link.contains("#") && !urlList.contains(link)) {
+                        urlList.add(link);
+                        PageIndexer task = new PageIndexer(link, pageDtoList, urlList, config);
+                        task.fork();
+                        taskList.add(task);
+                    }
                 }
             }
             taskList.forEach(ForkJoinTask::join);
@@ -82,4 +76,19 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
         }
         return pageDtoList;
     }
+
+    private boolean isSiteElementsType(String pathPage) {
+        List<String> WRONG_TYPES = Arrays.asList(
+                "jpeg", "jpg", "pdf",
+                "png", "gif", "zip",
+                "tar", "jar", "gz",
+                "svg", "ppt", "pptx",
+                "svg", "JPG");
+        if (!WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1))) {
+            return true;
+        }
+        else return false;
+    }
+
+
 }

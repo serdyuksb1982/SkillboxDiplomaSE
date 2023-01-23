@@ -11,7 +11,7 @@ import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.index.Indexing;
+import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.site.SiteIndexed;
 
@@ -23,43 +23,30 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 @Slf4j
 public class IndexingService {
-    private static final int processorCoreCount = Runtime.getRuntime().availableProcessors();
     private ExecutorService executorService;
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
-    private final LemmaIndexer lemmaParser;
-    private final Indexing indexParser;
-    private final SitesList sitesList;
+    private final LemmaIndexer lemmaIndexer;
+    private final WebParser webParser;
+    private final SitesList config;
 
-    public boolean urlIndexing(String url) {
-        if (urlCheck(url)) {
-            log.info("Начата переиндексация сайта - " + url);
-            executorService = Executors.newFixedThreadPool(processorCoreCount);
-            executorService.submit(new SiteIndexed(pageRepository, siteRepository, lemmaRepository, indexRepository, lemmaParser, indexParser, url, sitesList));
-            executorService.shutdown();
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
-    public boolean indexingAll() {
+    public boolean startIndexing() {
         if (isIndexingActive()) {
-            log.debug("Индексация уже запущена");
+            log.debug("Indexing is already running.");
             return false;
         } else {
-            List<Site> siteList = sitesList.getSites();
-            executorService = Executors.newFixedThreadPool(processorCoreCount);
+            List<Site> siteList = config.getSites();
+            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
-                log.info("Парсинг сайта: " + site.getName());
-                executorService.submit(new SiteIndexed(pageRepository, siteRepository, lemmaRepository, indexRepository, lemmaParser, indexParser, url, sitesList));
+                log.info("Indexing web site " + site.getName());
+                executorService.submit(new SiteIndexed(pageRepository,
+                        siteRepository,
+                        lemmaRepository, indexRepository, lemmaIndexer, webParser, url, config));
             }
             executorService.shutdown();
         }
@@ -69,11 +56,10 @@ public class IndexingService {
 
     public boolean stopIndexing() {
         if (isIndexingActive()) {
-            log.info("Останавливаем индексацию");
+            log.info("Index stopping.");
             executorService.shutdownNow();
             return true;
         } else {
-            log.info("Индексация не может быть остановлена т.к. не была запущена");
             return false;
         }
     }
@@ -89,13 +75,4 @@ public class IndexingService {
         return false;
     }
 
-    private boolean urlCheck(String url) {
-        List<Site> urlList = sitesList.getSites();
-        for (Site site : urlList) {
-            if (site.getUrl().equals(url)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

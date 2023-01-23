@@ -16,13 +16,12 @@ import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
-import searchengine.services.index.Indexing;
+import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.pageconvertor.PageIndexer;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
@@ -35,9 +34,9 @@ public class SiteIndexed implements Runnable {
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
     private final LemmaIndexer lemmaParser;
-    private final Indexing indexParser;
+    private final WebParser indexParser;
     private final String url;
-    private final SitesList sitesList;
+    private final SitesList config;
 
     @Override
     public void run() {
@@ -63,11 +62,11 @@ public class SiteIndexed implements Runnable {
             if (!Thread.interrupted()) {
                 List<PageDto> pageDtoList;
                 if (!Thread.interrupted()) {
-                    String urlFormat = url.concat("/") ;
+                    String urls = url.concat("/") ;
                     List<PageDto> pageDtosList = new CopyOnWriteArrayList<>();
                     List<String> urlList = new CopyOnWriteArrayList<>();
                     ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urlFormat, pageDtosList, urlList));
+                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls, pageDtosList, urlList, config));
                     pageDtoList = new  CopyOnWriteArrayList<>(pages);
                 } else throw new InterruptedException();
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
@@ -87,7 +86,7 @@ public class SiteIndexed implements Runnable {
             if (!Thread.interrupted()) {
                 SiteModel siteModel = siteRepository.findByUrl(url);
                 siteModel.setStatusTime(new Date());
-                lemmaParser.run(siteModel);
+                lemmaParser.startLemmaIndexer();
                 List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
                 List<LemmaModel> lemmaList = new CopyOnWriteArrayList<>();
 
@@ -100,7 +99,7 @@ public class SiteIndexed implements Runnable {
                 throw new RuntimeException();
             }
             if (!Thread.interrupted()) {
-                indexParser.run(site);
+                indexParser.startWebParser(site);
                 List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
                 List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
                 site.setStatusTime(new Date());
@@ -111,7 +110,7 @@ public class SiteIndexed implements Runnable {
                 }
                 indexRepository.flush();
                 indexRepository.saveAll(indexModels);
-                log.info("Indexing stopping ".concat(url));
+                log.info("WebParser stopping ".concat(url));
                 site.setStatusTime(new Date());
                 site.setStatus(Status.INDEXED);
                 siteRepository.save(site);
@@ -121,9 +120,9 @@ public class SiteIndexed implements Runnable {
             }
 
         } catch (InterruptedException e) {
-            log.error("Indexing stopped from ".concat(url).concat(". ").concat(e.getMessage()));
+            log.error("WebParser stopped from ".concat(url).concat(". ").concat(e.getMessage()));
             SiteModel sites = new SiteModel();
-            sites.setLastError("Indexing stopped");
+            sites.setLastError("WebParser stopped");
             sites.setStatus(Status.FAILED);
             sites.setStatusTime(new Date());
             siteRepository.save(site);
@@ -131,7 +130,7 @@ public class SiteIndexed implements Runnable {
     }
 
     private String getSiteName() {
-        List<Site> sites = sitesList.getSites();
+        List<Site> sites = config.getSites();
         for (Site site : sites) {
             if (site.getUrl().equals(url)) {
                 return site.getName();
