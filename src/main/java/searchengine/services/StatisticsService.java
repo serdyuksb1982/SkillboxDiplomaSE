@@ -34,7 +34,7 @@ public class StatisticsService {
     private DetailedStatisticsItem getDetailed(SiteModel site) {
         String url = site.getUrl();
         String name = site.getName();
-        Status status = site.getStatus();
+        String status = site.getStatus().toString();
         Date statusTime = site.getStatusTime();
         String error = site.getLastError();
         long pages = pageRepository.countBySiteId(site);
