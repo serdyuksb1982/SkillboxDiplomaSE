@@ -5,7 +5,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 public class IndexDto {
-    private Long pageID;
-    private Long lemmaID;
-    private Float rank;
+    private long pageID;
+    private long lemmaID;
+    private float rank;
 }

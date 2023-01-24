@@ -50,7 +50,7 @@ public class LemmaIndexer {
         }
     }
 
-    public static String clearHtml(String content, String tag) {
+    public String clearHtml(String content, String tag) {
         StringBuilder html = new StringBuilder();
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(tag);

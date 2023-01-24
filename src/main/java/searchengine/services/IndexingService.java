@@ -43,10 +43,15 @@ public class IndexingService {
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
-                log.info("Indexing web site " + site.getName());
+                log.info("Indexing web site ".concat(site.getName()));
                 executorService.submit(new SiteIndexed(pageRepository,
                         siteRepository,
-                        lemmaRepository, indexRepository, lemmaIndexer, webParser, url, config));
+                        lemmaRepository,
+                        indexRepository,
+                        lemmaIndexer,
+                        webParser,
+                        url,
+                        config));
             }
             executorService.shutdown();
         }

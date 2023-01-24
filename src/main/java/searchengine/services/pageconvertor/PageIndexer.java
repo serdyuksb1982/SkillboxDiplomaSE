@@ -23,7 +23,10 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
     private final SitesList config;
-    public PageIndexer(String url, List<PageDto> pageDtoList, List<String> urlList, SitesList config) {
+    public PageIndexer(String url,
+                       List<PageDto> pageDtoList,
+                       List<String> urlList,
+                       SitesList config) {
         this.url = url;
         this.pageDtoList = pageDtoList;
         this.urlList = urlList;

@@ -25,9 +25,9 @@ public class StatisticsService {
     private final SiteRepository siteRepository;
 
     private TotalStatistics getTotal() {
-        Long sites = siteRepository.count();
-        Long pages = pageRepository.count();
-        Long lemmas = lemmaRepository.count();
+        long sites = siteRepository.count();
+        long pages = pageRepository.count();
+        long lemmas = lemmaRepository.count();
         return new TotalStatistics(sites, pages, lemmas, true);
     }
 
@@ -51,8 +51,6 @@ public class StatisticsService {
         }
         return result;
     }
-
-
 
     public StatisticsResponse getStatistics() {
         TotalStatistics total = getTotal();

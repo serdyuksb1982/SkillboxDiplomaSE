@@ -21,7 +21,6 @@ public class PageModel implements Serializable {
     страницы (например, 200, 404, 500 или другие);
     ● content MEDIUMTEXT NOT NULL — контент страницы (HTML-код)*/
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

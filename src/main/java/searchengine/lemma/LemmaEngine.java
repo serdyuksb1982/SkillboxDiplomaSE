@@ -17,7 +17,7 @@ public class LemmaEngine {
     public Map<String, Integer> getLemmaMap(String text) {
 
         text = arrayContainsWords(text);
-        HashMap<String, Integer> lemmaList = new HashMap<>();
+        Map<String, Integer> lemmaList = new HashMap<>();
         String[] elements = text.toLowerCase(Locale.ROOT).split("\\s+");
         for (String el : elements) {
             List<String> wordsList;
@@ -74,7 +74,6 @@ public class LemmaEngine {
             return "";
         }
     }
-
 
     private String arrayContainsWords(String text) {
         return text.toLowerCase(Locale.ROOT)
