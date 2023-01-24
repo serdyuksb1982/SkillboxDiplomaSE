@@ -15,6 +15,8 @@ DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4".
 <li>Леммизация результатов</li>
 <li>Осуществление поиска в индексированном контенте</li>
 
+***
+
 > SpringBoot application. <br>
 > The search engine receives sites from the application.yaml. Using ForkJoinPool collects
 > information about sites
