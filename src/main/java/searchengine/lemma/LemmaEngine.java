@@ -16,11 +16,16 @@ public class LemmaEngine {
 
     public Map<String, Integer> getLemmaMap(String text) {
 
-        text = arrayContainsRussianWords(text);
+        text = arrayContainsWords(text);
         HashMap<String, Integer> lemmaList = new HashMap<>();
         String[] elements = text.toLowerCase(Locale.ROOT).split("\\s+");
         for (String el : elements) {
-            List<String> wordsList = getLemma(el);
+            List<String> wordsList;
+            try {
+                wordsList = getLemma(el);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             for (String word : wordsList) {
                 int count = lemmaList.getOrDefault(word, 0);
                 lemmaList.put(word, count + 1);
@@ -29,26 +34,25 @@ public class LemmaEngine {
         return lemmaList;
     }
 
-    public List<String> getLemma(String word) {
+    public List<String> getLemma(String word) throws Exception {
         List<String> lemmaList = new ArrayList<>();
-        try {
-            List<String> baseRusForm = lemmaConfiguration.luceneMorphology().getNormalForms(word);
+        if (checkLanguage(word).equals("Russian")) {
+            List<String> baseRusForm = lemmaConfiguration.russianLuceneMorphology().getNormalForms(word);
             if (!word.isEmpty() && !isCorrectWordForm(word)) {
                 lemmaList.addAll(baseRusForm);
             }
-        } catch (Exception e) {
-            e.getMessage();
         }
+
         return lemmaList;
     }
 
     private boolean isCorrectWordForm(String word) throws IOException {
-        List<String> morphForm = lemmaConfiguration.luceneMorphology().getMorphInfo(word);
+        List<String> morphForm = lemmaConfiguration.russianLuceneMorphology().getMorphInfo(word);
         for (String l : morphForm) {
             if (l.contains("ПРЕДЛ")
                     || l.contains("СОЮЗ")
                     || l.contains("МЕЖД")
-                    || l.contains("МС")
+                    || l.contains("ВВОДН")
                     || l.contains("ЧАСТ")
                     || l.length() <= 3) {
                 return true;
@@ -57,7 +61,22 @@ public class LemmaEngine {
         return false;
     }
 
-    private String arrayContainsRussianWords(String text) {
+
+    private String checkLanguage(String word) {
+        String russianAlphabet = "[а-яА-Я]+";
+        String englishAlphabet = "[a-zA-Z]+";
+
+        if (word.matches(russianAlphabet)) {
+            return "Russian";
+        } else if (word.matches(englishAlphabet)) {
+            return "English";
+        } else {
+            return "";
+        }
+    }
+
+
+    private String arrayContainsWords(String text) {
         return text.toLowerCase(Locale.ROOT)
                 .replaceAll("([^а-я\\s])", " ").trim();
     }
