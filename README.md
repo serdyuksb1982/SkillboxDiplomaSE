@@ -4,19 +4,25 @@
 
 📄<b>_Stack_</b>:
 Java version 17, Spring Boot version 2.5.7, maven, Hibernate, migratiom FlyWay Db, Swagger Api, Lombok,JSOUP,
-DB MySQL8O, create schema -> "charset/Collation: utf8mb4".
+DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4".
 
 ***
 
 ## Description
+Реализация поискового "движка".
+<li>Индексация WEB-сайтов</li>
+<li>Получение статистических результатов индексации</li>
+<li>Леммизация результатов</li>
+<li>Осуществление поиска в индексированном контенте</li>
 
 > SpringBoot application. <br>
 > The search engine receives sites from the application.yaml. Using ForkJoinPool collects
 > information about sites
 > it to the MySQL database. RestControllers provides interface to search information
 
+
+## Файл настройки
 - Sites in application.yaml
- ``` yaml
  indexing-settings:
    sites:
      - url: https://www.playback.ru
