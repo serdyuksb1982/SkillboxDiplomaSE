@@ -28,12 +28,12 @@ public class WebParser {
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final LemmaEngine lemmaEngine;
-    private List<IndexDto> config;
+    private List<IndexDto> indexDtos;
     
     public void startWebParser(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
-        config = new ArrayList<>();
+        indexDtos = new ArrayList<>();
 
         for (PageModel page : pageList) {
             if (page.getCode() < 400) {
@@ -45,7 +45,7 @@ public class WebParser {
                 Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
-                    Long lemmaId = lemma.getId();
+                    long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
                         float totalRank = 0.0F;
@@ -57,7 +57,7 @@ public class WebParser {
                             float bodyRank = (float) (bodyList.get(keyWord) * 0.8);
                             totalRank += bodyRank;
                         }
-                        config.add(new IndexDto(pageId, lemmaId, totalRank));
+                        indexDtos.add(new IndexDto(pageId, lemmaId, totalRank));
                     } else {
                         log.debug("Lemma not found");
                     }
@@ -79,6 +79,6 @@ public class WebParser {
     }
 
     public List<IndexDto> getIndexList() {
-        return config;
+        return indexDtos;
     }
 }

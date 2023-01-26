@@ -79,4 +79,24 @@ public class LemmaEngine {
         return text.toLowerCase(Locale.ROOT)
                 .replaceAll("([^а-я\\s])", " ").trim();
     }
+
+    public Collection<Integer> findLemmaIndexInText(String content, String lemma) {
+        List<Integer> lemmaIndexList = new ArrayList<>();
+        String[] elements = content.toLowerCase(Locale.ROOT).split("\\p{Punct}|\\s");
+        int index = 0;
+        for (String el : elements) {
+            try {
+                List<String> lemmas = getLemma(el);
+                for (String lem : lemmas) {
+                    if (lem.equals(lemma)) {
+                        lemmaIndexList.add(index);
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            index += el.length() + 1;
+        }
+        return lemmaIndexList;
+    }
 }

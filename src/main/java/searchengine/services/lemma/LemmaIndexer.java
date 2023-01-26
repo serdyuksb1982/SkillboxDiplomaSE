@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import searchengine.dto.LemmaDto;
 import searchengine.lemma.LemmaEngine;
 import searchengine.model.PageModel;
-import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
 
 import java.util.*;

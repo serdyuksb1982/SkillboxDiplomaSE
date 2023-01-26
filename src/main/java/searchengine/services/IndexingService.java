@@ -40,6 +40,8 @@ public class IndexingService {
             List<Site> siteList = config.getSites();
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
+                //Optional<String> url = Optional.of(site.getUrl());
+
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
@@ -74,6 +76,36 @@ public class IndexingService {
         Iterable<SiteModel> siteList = siteRepository.findAll();
         for (SiteModel site : siteList) {
             if (site.getStatus() == Status.INDEXING) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean urlIndexing(String url) {
+        if (urlCheck(url)) {
+            log.info("Начата переиндексация сайта - " + url);
+            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            executorService.submit(new SiteIndexed(pageRepository,
+                    siteRepository,
+                    lemmaRepository,
+                    indexRepository,
+                    lemmaIndexer,
+                    webParser,
+                    url,
+                    config));
+            executorService.shutdown();
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+
+    private boolean urlCheck(String url) {
+        List<Site> urlList = config.getSites();
+        for (Site site : urlList) {
+            if (site.getUrl().equals(url)) {
                 return true;
             }
         }
