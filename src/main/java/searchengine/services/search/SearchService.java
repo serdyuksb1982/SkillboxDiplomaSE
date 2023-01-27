@@ -31,9 +31,9 @@ public class SearchService {
     private final IndexRepository indexRepository;
     private final SiteRepository siteRepository;
 
-    private List<SearchDto> getSearchDtoList(List<LemmaModel> lemmaList,
-                                             List<String> textLemmaList,
-                                             int start, int limit) {
+    protected List<SearchDto> createSearchDtoList(List<LemmaModel> lemmaList,
+                                                  List<String> textLemmaList,
+                                                  int start, int limit) {
         List<SearchDto> result = new ArrayList<>();
         pageRepository.flush();
         if (lemmaList.size() >= textLemmaList.size()) {
@@ -55,8 +55,9 @@ public class SearchService {
         } else return result;
     }
 
-    private List<SearchDto> getSearchData(ConcurrentHashMap<PageModel, Float> pageList, List<String> textLemmaList) {
-        List<SearchDto> result = new ArrayList<>();
+    private List<SearchDto> getSearchData(ConcurrentHashMap<PageModel, Float> pageList,
+                                          List<String> textLemmaList) {
+        List<SearchDto> searchDtoList = new ArrayList<>();
         for (PageModel page : pageList.keySet()) {
             String uri = page.getPath();
             String content = page.getContent();
@@ -68,27 +69,23 @@ public class SearchService {
             String body = clearHtmlCode(content, "body");
             stringBuilder.append(title).append(body);
             float absRel = pageList.get(page);
-            String snipped = getSnippet(stringBuilder.toString(), textLemmaList);
-            result.add(new SearchDto(site, siteName, uri, title, snipped, absRel));
-        }
-        return result;
-    }
-
-    private String getSnippet(String content, List<String> lemmaList) {
-        List<Integer> lemmaIndex = new ArrayList<>();
-        StringBuilder result = new StringBuilder();
-        for (String lemma : lemmaList) {
-            lemmaIndex.addAll(morphology.findLemmaIndexInText(content, lemma));
-        }
-        Collections.sort(lemmaIndex);
-        List<String> wordList = getWordsFromContent(content, lemmaIndex);
-        for (int i = 0; i < wordList.size(); i++) {
-            result.append(wordList.get(i)).append("...");
-            if (i > 3) {
-                break;
+            List<Integer> lemmaIndex = new ArrayList<>();
+            StringBuilder snippetBuilder = new StringBuilder();
+            for (String lemma : textLemmaList) {
+                lemmaIndex.addAll(morphology.findLemmaIndexInText(stringBuilder.toString(), lemma));
             }
+            Collections.sort(lemmaIndex);
+            List<String> wordList = getWordsFromContent(stringBuilder.toString(), lemmaIndex);
+            for (int i = 0; i < wordList.size(); i++) {
+                snippetBuilder.append(wordList.get(i)).append(".");
+                if (i > 3) {
+                    break;
+                }
+            }
+
+            searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), absRel));
         }
-        return result.toString();
+        return searchDtoList;
     }
 
     private List<String> getWordsFromContent(String content, List<Integer> lemmaIndex) {
@@ -153,7 +150,7 @@ public class SearchService {
         return map;
     }
 
-    private List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
+    protected List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
         lemmaRepository.flush();
         List<LemmaModel> lemmaModels = lemmaRepository.findLemmaListBySite(lemmas, site);
         List<LemmaModel> result = new ArrayList<>(lemmaModels);
@@ -161,7 +158,7 @@ public class SearchService {
         return result;
     }
 
-    private List<String> getLemmaFromSearchText(String text) {
+    protected List<String> getLemmaFromSearchText(String text) {
         String[] words = text.toLowerCase(Locale.ROOT).split(" ");
         List<String> lemmaList = new ArrayList<>();
         for (String lemma : words) {
@@ -175,14 +172,14 @@ public class SearchService {
         return lemmaList;
     }
 
-    public List<SearchDto> siteSearch(String text,
+    /*public List<SearchDto> siteSearch(String text,
                                       String url,
                                       int start,
                                       int limit) {
         SiteModel site = siteRepository.findByUrl(url);
         List<String> textLemmaList = getLemmaFromSearchText(text);
         List<LemmaModel> foundLemmaList = getLemmaListFromSite(textLemmaList, site);
-        return getSearchDtoList(foundLemmaList, textLemmaList, start, limit);
+        return createSearchDtoList(foundLemmaList, textLemmaList, start, limit);
     }
 
     public List<SearchDto> fullSiteSearch(String text,
@@ -198,7 +195,7 @@ public class SearchService {
         List<SearchDto> searchData = null;
         for (LemmaModel l : foundLemmaList) {
             if (l.getLemma().equals(text)) {
-                searchData = new ArrayList<>(getSearchDtoList(foundLemmaList, textLemmaList, start, limit));
+                searchData = new ArrayList<>(createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
                 searchData.sort(new Comparator<SearchDto>() {
                     @Override
                     public int compare(SearchDto o1, SearchDto o2) {
@@ -220,7 +217,7 @@ public class SearchService {
             }
         }
         return searchData;
-    }
+    }*/
 
     public  String clearHtmlCode(String text, String element) {
         StringBuilder stringBuilder = new StringBuilder();

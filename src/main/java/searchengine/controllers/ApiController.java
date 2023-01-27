@@ -12,7 +12,7 @@ import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
-import searchengine.services.search.SearchService;
+import searchengine.search.SearchStarter;
 
 import java.util.List;
 
@@ -25,13 +25,16 @@ public class ApiController {
 
     private final SiteRepository siteRepository;
 
-    private final SearchService searchService;
+    private final SearchStarter searchStarter;
 
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService, SiteRepository siteRepository, SearchService searchService) {
+    public ApiController(StatisticsService statisticsService,
+                         IndexingService indexingService,
+                         SiteRepository siteRepository,
+                         SearchStarter searchService) {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
         this.siteRepository = siteRepository;
-        this.searchService = searchService;
+        this.searchStarter = searchService;
     }
 
     @ApiOperation("Get all statistics")
@@ -64,13 +67,14 @@ public class ApiController {
         }
     }
 
+    @ApiOperation("Search in sites")
     @GetMapping("/search")
-    @ApiOperation("Поиск информации")
     public ResponseEntity<Object> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                                          @RequestParam(name = "site", required = false, defaultValue = "") String site,
                                          @RequestParam(name = "start", required = false, defaultValue = "0") int start,
-                                         @RequestParam(name = "limit", required = false, defaultValue = "20") int limit) {
+                                         @RequestParam(name = "limit", required = false, defaultValue = "30") int limit) {
         if (query.isEmpty()) {
+            log.info("Query is empty");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
             List<SearchDto> searchData;
@@ -78,12 +82,11 @@ public class ApiController {
                 if (siteRepository.findByUrl(site) == null) {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 } else {
-                    searchData = searchService.siteSearch(query, site, start, limit);
+                    searchData = searchStarter.siteSearch(query, site, start, limit);
                 }
             } else {
-                searchData = searchService.fullSiteSearch(query, start, limit);
+                searchData = searchStarter.fullSiteSearch(query, start, limit);
             }
-
             return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
         }
     }
