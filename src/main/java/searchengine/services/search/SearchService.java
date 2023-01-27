@@ -16,7 +16,6 @@ import searchengine.model.SiteModel;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
-import searchengine.repository.SiteRepository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,31 +28,6 @@ public class SearchService {
     private final LemmaRepository lemmaRepository;
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
-    private final SiteRepository siteRepository;
-
-    protected List<SearchDto> createSearchDtoList(List<LemmaModel> lemmaList,
-                                                  List<String> textLemmaList,
-                                                  int start, int limit) {
-        List<SearchDto> result = new ArrayList<>();
-        pageRepository.flush();
-        if (lemmaList.size() >= textLemmaList.size()) {
-            List<PageModel> pagesList = pageRepository.findByLemmaList(lemmaList);
-            indexRepository.flush();
-            List<IndexModel> indexesList = indexRepository.findByPageAndLemmas(lemmaList, pagesList);
-            ConcurrentHashMap<PageModel, Float> relevanceMap = getPageAbsRelevance(pagesList, indexesList);
-            List<SearchDto> searchDtos = getSearchData(relevanceMap, textLemmaList);
-            if (start > searchDtos.size()) {
-                return new ArrayList<>();
-            }
-            if (searchDtos.size() > limit) {
-                for (int i = start; i < limit; i++) {
-                    result.add(searchDtos.get(i));
-                }
-                return result;
-            } else return searchDtos;
-
-        } else return result;
-    }
 
     private List<SearchDto> getSearchData(ConcurrentHashMap<PageModel, Float> pageList,
                                           List<String> textLemmaList) {
@@ -150,7 +124,7 @@ public class SearchService {
         return map;
     }
 
-    protected List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
+    public List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
         lemmaRepository.flush();
         List<LemmaModel> lemmaModels = lemmaRepository.findLemmaListBySite(lemmas, site);
         List<LemmaModel> result = new ArrayList<>(lemmaModels);
@@ -158,7 +132,7 @@ public class SearchService {
         return result;
     }
 
-    protected List<String> getLemmaFromSearchText(String text) {
+    public List<String> getLemmaFromSearchText(String text) {
         String[] words = text.toLowerCase(Locale.ROOT).split(" ");
         List<String> lemmaList = new ArrayList<>();
         for (String lemma : words) {
@@ -172,52 +146,29 @@ public class SearchService {
         return lemmaList;
     }
 
-    /*public List<SearchDto> siteSearch(String text,
-                                      String url,
-                                      int start,
-                                      int limit) {
-        SiteModel site = siteRepository.findByUrl(url);
-        List<String> textLemmaList = getLemmaFromSearchText(text);
-        List<LemmaModel> foundLemmaList = getLemmaListFromSite(textLemmaList, site);
-        return createSearchDtoList(foundLemmaList, textLemmaList, start, limit);
-    }
-
-    public List<SearchDto> fullSiteSearch(String text,
-                                          int start,
-                                          int limit) {
-        List<SiteModel> siteList = siteRepository.findAll();
+    public List<SearchDto> createSearchDtoList(List<LemmaModel> lemmaList,
+                                               List<String> textLemmaList,
+                                               int start, int limit) {
         List<SearchDto> result = new ArrayList<>();
-        List<LemmaModel> foundLemmaList = new ArrayList<>();
-        List<String> textLemmaList = getLemmaFromSearchText(text);
-        for (SiteModel site : siteList) {
-            foundLemmaList.addAll(getLemmaListFromSite(textLemmaList, site));
-        }
-        List<SearchDto> searchData = null;
-        for (LemmaModel l : foundLemmaList) {
-            if (l.getLemma().equals(text)) {
-                searchData = new ArrayList<>(createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
-                searchData.sort(new Comparator<SearchDto>() {
-                    @Override
-                    public int compare(SearchDto o1, SearchDto o2) {
-                        return Float.compare(o2.getRelevance(), o1.getRelevance());
-                    }
-                });
-                if (searchData.size() > limit) {
-                    for (int i = start; i < limit; i++) {
-                        result.add(searchData.get(i));
-                    }
-                    return result;
-                }
-            } else {
-                try {
-                    throw new Exception();
-                } catch (Exception e) {
-                    throw new RuntimeException();
-                }
+        pageRepository.flush();
+        if (lemmaList.size() >= textLemmaList.size()) {
+            List<PageModel> pagesList = pageRepository.findByLemmaList(lemmaList);
+            indexRepository.flush();
+            List<IndexModel> indexesList = indexRepository.findByPageAndLemmas(lemmaList, pagesList);
+            ConcurrentHashMap<PageModel, Float> relevanceMap = getPageAbsRelevance(pagesList, indexesList);
+            List<SearchDto> searchDtos = getSearchData(relevanceMap, textLemmaList);
+            if (start > searchDtos.size()) {
+                return new ArrayList<>();
             }
-        }
-        return searchData;
-    }*/
+            if (searchDtos.size() > limit) {
+                for (int i = start; i < limit; i++) {
+                    result.add(searchDtos.get(i));
+                }
+                return result;
+            } else return searchDtos;
+
+        } else return result;
+    }
 
     public  String clearHtmlCode(String text, String element) {
         StringBuilder stringBuilder = new StringBuilder();

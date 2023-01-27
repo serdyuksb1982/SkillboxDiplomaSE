@@ -22,11 +22,8 @@ import java.util.List;
 public class ApiController {
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
-
     private final SiteRepository siteRepository;
-
     private final SearchStarter searchStarter;
-
     public ApiController(StatisticsService statisticsService,
                          IndexingService indexingService,
                          SiteRepository siteRepository,
