@@ -14,5 +14,5 @@ public class SearchDto {
     private String uri;
     private String title;
     private String snippet;
-    private float actuality;
+    private float relevance;
 }

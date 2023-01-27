@@ -31,14 +31,14 @@ spring:
 
 indexing-settings:
   sites:
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    #- url: https://www.skillbox.ru
-    #  name: Skillbox
     #- url: https://www.playback.ru
       #name: PlayBack.Ru
+    #- url: https://www.lenta.ru
+      #name: Лента.ру
+    #- url: https://www.skillbox.ru
+      #name: Skillbox
+    - url: https://www.playback.ru
+      name: PlayBack.Ru
     #- url: http://redmine-reports.soctech.loc
       #name: Soctech.loc
   userAgent: Mozilla/5.0 (Windows NT 6.1; rv:98.0) Gecko/20100101 Firefox/98.0

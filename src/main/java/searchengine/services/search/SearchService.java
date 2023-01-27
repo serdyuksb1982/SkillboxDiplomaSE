@@ -31,40 +31,22 @@ public class SearchService {
     private final IndexRepository indexRepository;
     private final SiteRepository siteRepository;
 
-
-    private String getWordsFromIndex(int start, int end, String content) {
-        String word = content.substring(start, end);
-        int prevPoint;
-        int lastPoint;
-        if (content.lastIndexOf(" ", start) != -1) {
-            prevPoint = content.lastIndexOf(" ", start);
-        } else prevPoint = start;
-        if (content.indexOf(" ", end  + 30) != -1) {
-            lastPoint = content.indexOf(" ", end + 30);
-        } else lastPoint = content.indexOf(" ", end);
-        String text = content.substring(prevPoint, lastPoint);
-
-        text = text.replaceAll(word, "<b>" + word + "</b>");
-        return text;
-
-    }
-
     private List<SearchDto> getSearchDtoList(List<LemmaModel> lemmaList,
                                              List<String> textLemmaList,
-                                             int offset, int limit) {
+                                             int start, int limit) {
         List<SearchDto> result = new ArrayList<>();
         pageRepository.flush();
         if (lemmaList.size() >= textLemmaList.size()) {
-            List<PageModel> foundPageList = pageRepository.findByLemmaList(lemmaList);
+            List<PageModel> pagesList = pageRepository.findByLemmaList(lemmaList);
             indexRepository.flush();
-            List<IndexModel> foundIndexList = indexRepository.findByPageAndLemmas(lemmaList, foundPageList);
-            ConcurrentHashMap<PageModel, Float> sortedPageByAbsRelevance = getPageAbsRelevance(foundPageList, foundIndexList);
-            List<SearchDto> searchDtos = getSearchData(sortedPageByAbsRelevance, textLemmaList);
-            if (offset > searchDtos.size()) {
+            List<IndexModel> indexesList = indexRepository.findByPageAndLemmas(lemmaList, pagesList);
+            ConcurrentHashMap<PageModel, Float> relevanceMap = getPageAbsRelevance(pagesList, indexesList);
+            List<SearchDto> searchDtos = getSearchData(relevanceMap, textLemmaList);
+            if (start > searchDtos.size()) {
                 return new ArrayList<>();
             }
             if (searchDtos.size() > limit) {
-                for (int i = offset; i < limit; i++) {
+                for (int i = start; i < limit; i++) {
                     result.add(searchDtos.get(i));
                 }
                 return result;
@@ -82,8 +64,8 @@ public class SearchService {
             String site = pageSite.getUrl();
             String siteName = pageSite.getName();
             StringBuilder stringBuilder = new StringBuilder();
-            String title = clearCodeFromTag(content, "title");
-            String body = clearCodeFromTag(content, "body");
+            String title = clearHtmlCode(content, "title");
+            String body = clearHtmlCode(content, "body");
             stringBuilder.append(title).append(body);
             float absRel = pageList.get(page);
             String snipped = getSnippet(stringBuilder.toString(), textLemmaList);
@@ -114,56 +96,61 @@ public class SearchService {
         for (int i = 0; i < lemmaIndex.size(); i++) {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
-            int nextPoint = i + 1;
-            while (nextPoint < lemmaIndex.size() && lemmaIndex.get(nextPoint) - end > 0 && lemmaIndex.get(nextPoint) - end < 5) {
-                end = content.indexOf(" ", lemmaIndex.get(nextPoint));
-                nextPoint += 1;
+            int next = i + 1;
+            while ((next < lemmaIndex.size()) && (lemmaIndex.get(next) - end > 0) && (lemmaIndex.get(next) - end < 5)) {
+                end = content.indexOf(" ", lemmaIndex.get(next));
+                next = next + 1;
             }
-            i = nextPoint - 1;
-            String text = getWordsFromIndex(start, end, content);
+            i = next - 1;
+
+            String word = content.substring(start, end);
+            int startIndex;
+            int nextIndex;
+            if (content.lastIndexOf(" ", start) != -1) {
+                startIndex = content.lastIndexOf(" ", start);
+            } else startIndex = start;
+            if (content.indexOf(" ", end  + 30) != -1) {
+                nextIndex = content.indexOf(" ", end + 30);
+            } else nextIndex = content.indexOf(" ", end);
+            String text = content.substring(startIndex, nextIndex);
+
+            text = text.replaceAll(word, "<b>".concat(word).concat("</b>"));
+
+
             result.add(text);
         }
         result.sort(Comparator.comparing(String::length).reversed());
         return result;
     }
 
-    private ConcurrentHashMap<PageModel, Float> getPageAbsRelevance(List<PageModel> pageList, List<IndexModel> indexList) {
-        Map<PageModel, Float> pageWithRelevance = new HashMap<>();
+    private ConcurrentHashMap<PageModel, Float> getPageAbsRelevance(List<PageModel> pageList,
+                                                                    List<IndexModel> indexList) {
+        Map<PageModel, Float> relevanceMap = new HashMap<>();
         for (PageModel page : pageList) {
-            float relevant = 0;
+            float relevance = 0;
             for (IndexModel index : indexList) {
                 if (index.getPage() == page) {
-                    relevant += index.getRank();
+                    relevance += index.getRank();
                 }
             }
-            pageWithRelevance.put(page, relevant);
+            relevanceMap.put(page, relevance);
         }
-        Map<PageModel, Float> pageWithAbsoluteRelevance = new HashMap<>();
-        for (PageModel page : pageWithRelevance.keySet()) {
-            float absoluteRelevance = pageWithRelevance.get(page) / Collections.max(pageWithRelevance.values());
-            pageWithAbsoluteRelevance.put(page, absoluteRelevance);
+        Map<PageModel, Float> allRelevanceMap = new HashMap<>();
+        for (PageModel page : relevanceMap.keySet()) {
+            float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
+            allRelevanceMap.put(page, relevance);
         }
-        List<Map.Entry<PageModel, Float>> toSort = new ArrayList<>();
-        for (Map.Entry<PageModel, Float> pageModelFloatEntry : pageWithAbsoluteRelevance
+        List<Map.Entry<PageModel, Float>> sortList = new ArrayList<>();
+        for (Map.Entry<PageModel, Float> map : allRelevanceMap
                 .entrySet()) {
-            toSort.add(pageModelFloatEntry);
+            sortList.add(map);
         }
-        toSort.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+        sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         ConcurrentHashMap<PageModel, Float> map = new ConcurrentHashMap<>();
-        for (Map.Entry<PageModel, Float> pageModelFloatEntry : toSort) {
+        for (Map.Entry<PageModel, Float> pageModelFloatEntry : sortList) {
             map.putIfAbsent(pageModelFloatEntry.getKey(), pageModelFloatEntry.getValue());
         }
         return map;
-    }
-
-    public  String clearCodeFromTag(String content, String s) {
-        StringBuilder stringBuilder = new StringBuilder();
-        Document doc = Jsoup.parse(content);
-        Elements elements = doc.select(s);
-        for (Element el : elements) {
-            stringBuilder.append(el.html());
-        }
-        return Jsoup.parse(stringBuilder.toString()).text();
     }
 
     private List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
@@ -174,8 +161,8 @@ public class SearchService {
         return result;
     }
 
-    private List<String> getLemmaFromSearchText(String searchText) {
-        String[] words = searchText.toLowerCase(Locale.ROOT).split(" ");
+    private List<String> getLemmaFromSearchText(String text) {
+        String[] words = text.toLowerCase(Locale.ROOT).split(" ");
         List<String> lemmaList = new ArrayList<>();
         for (String lemma : words) {
             try {
@@ -188,31 +175,38 @@ public class SearchService {
         return lemmaList;
     }
 
-    public List<SearchDto> siteSearch(String searchText, String url, int offset, int limit) {
-        log.info("Search in ".concat(searchText).concat("\\").concat(" site ").concat(url));
+    public List<SearchDto> siteSearch(String text,
+                                      String url,
+                                      int start,
+                                      int limit) {
         SiteModel site = siteRepository.findByUrl(url);
-        List<String> textLemmaList = getLemmaFromSearchText(searchText);
+        List<String> textLemmaList = getLemmaFromSearchText(text);
         List<LemmaModel> foundLemmaList = getLemmaListFromSite(textLemmaList, site);
-        log.info("Search ended.");
-        return getSearchDtoList(foundLemmaList, textLemmaList, offset, limit);
+        return getSearchDtoList(foundLemmaList, textLemmaList, start, limit);
     }
 
-    public List<SearchDto> allSiteSearch(String searchText, int offset, int limit) {
-        log.info("Search in ".concat(searchText).concat("\\").concat(" site "));
+    public List<SearchDto> fullSiteSearch(String text,
+                                          int start,
+                                          int limit) {
         List<SiteModel> siteList = siteRepository.findAll();
         List<SearchDto> result = new ArrayList<>();
         List<LemmaModel> foundLemmaList = new ArrayList<>();
-        List<String> textLemmaList = getLemmaFromSearchText(searchText);
+        List<String> textLemmaList = getLemmaFromSearchText(text);
         for (SiteModel site : siteList) {
             foundLemmaList.addAll(getLemmaListFromSite(textLemmaList, site));
         }
         List<SearchDto> searchData = null;
         for (LemmaModel l : foundLemmaList) {
-            if (l.getLemma().equals(searchText)) {
-                searchData = new ArrayList<>(getSearchDtoList(foundLemmaList, textLemmaList, offset, limit));
-                searchData.sort((o1, o2) -> Float.compare(o2.getActuality(), o1.getActuality()));
+            if (l.getLemma().equals(text)) {
+                searchData = new ArrayList<>(getSearchDtoList(foundLemmaList, textLemmaList, start, limit));
+                searchData.sort(new Comparator<SearchDto>() {
+                    @Override
+                    public int compare(SearchDto o1, SearchDto o2) {
+                        return Float.compare(o2.getRelevance(), o1.getRelevance());
+                    }
+                });
                 if (searchData.size() > limit) {
-                    for (int i = offset; i < limit; i++) {
+                    for (int i = start; i < limit; i++) {
                         result.add(searchData.get(i));
                     }
                     return result;
@@ -225,7 +219,16 @@ public class SearchService {
                 }
             }
         }
-        log.info("Поисковый запрос обработан. Ответ получен.");
         return searchData;
+    }
+
+    public  String clearHtmlCode(String text, String element) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Document doc = Jsoup.parse(text);
+        Elements elements = doc.select(element);
+        for (Element el : elements) {
+            stringBuilder.append(el.html());
+        }
+        return Jsoup.parse(stringBuilder.toString()).text();
     }
 }

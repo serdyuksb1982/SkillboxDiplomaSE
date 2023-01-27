@@ -16,6 +16,7 @@ import java.util.List;
 public interface IndexRepository extends JpaRepository<IndexModel, Long> {
 
     @Query(value = "select i.* from Words_index i where i.lemma_id in :lemmas and i.page_id in :pages", nativeQuery = true)
-    List<IndexModel> findByPageAndLemmas(@Param("lemmas") List<LemmaModel> lemmaList,@Param("pages") List<PageModel> foundPageList);
+    List<IndexModel> findByPageAndLemmas(@Param("lemmas") List<LemmaModel> lemmaList,
+                                         @Param("pages") List<PageModel> foundPageList);
 
 }
