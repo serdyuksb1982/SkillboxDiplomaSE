@@ -40,7 +40,7 @@ public class IndexingService {
             List<Site> siteList = config.getSites();
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
-                //Optional<String> url = Optional.of(site.getUrl());
+                //Optional<String> url = Optional
 
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();

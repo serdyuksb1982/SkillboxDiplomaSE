@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.SearchDto;
+import searchengine.dto.statistics.ResponseDto;
 import searchengine.dto.statistics.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.repository.SiteRepository;
@@ -42,22 +43,22 @@ public class ApiController {
 
     @ApiOperation("Start parsing web")
     @GetMapping("/startIndexing")
-    public ResponseEntity<Boolean> startIndexing() {
+    public ResponseEntity<Object> startIndexing() {
         return ResponseEntity.ok(indexingService.startIndexing());
     }
 
     @ApiOperation("Stop parsing web")
     @GetMapping("/stopIndexing")
-    public ResponseEntity<Boolean> stopIndexing() {
+    public ResponseEntity<Object> stopIndexing() {
         return ResponseEntity.ok(indexingService.stopIndexing());
     }
 
     @ApiOperation("Index pages")
     @PostMapping("/indexPage")
-    public ResponseEntity<Boolean> indexPage(@RequestParam(name = "url") String url) {
+    public ResponseEntity<Object> indexPage(@RequestParam(name = "url") String url) {
         if (url.isEmpty()) {
             log.info("Страница не указана");
-            return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>( new ResponseDto(false, "Error"), HttpStatus.BAD_REQUEST);
         } else {
             log.info("Страница - " + url + " - добавлена на переиндексацию");
             return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
@@ -68,21 +69,21 @@ public class ApiController {
     @GetMapping("/search")
     public ResponseEntity<Object> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                                          @RequestParam(name = "site", required = false, defaultValue = "") String site,
-                                         @RequestParam(name = "start", required = false, defaultValue = "0") int start,
+                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
                                          @RequestParam(name = "limit", required = false, defaultValue = "30") int limit) {
         if (query.isEmpty()) {
             log.info("Query is empty");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponseDto(false, "Задан пустой поисковый запрос"), HttpStatus.BAD_REQUEST);
         } else {
             List<SearchDto> searchData;
             if (!site.isEmpty()) {
                 if (siteRepository.findByUrl(site) == null) {
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new ResponseDto(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
                 } else {
-                    searchData = searchStarter.siteSearch(query, site, start, limit);
+                    searchData = searchStarter.siteSearch(query, site, offset, limit);
                 }
             } else {
-                searchData = searchStarter.fullSiteSearch(query, start, limit);
+                searchData = searchStarter.fullSiteSearch(query, offset, limit);
             }
             return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
         }

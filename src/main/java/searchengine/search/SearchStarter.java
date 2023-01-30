@@ -39,10 +39,10 @@ public class SearchStarter {
         for (SiteModel site : siteList) {
             foundLemmaList.addAll(searchService.getLemmaListFromSite(textLemmaList, site));
         }
-        List<SearchDto> searchData = null;
+        List<SearchDto> searchData = new ArrayList<>();
         for (LemmaModel l : foundLemmaList) {
             if (l.getLemma().equals(text)) {
-                searchData = new ArrayList<>(searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
+                searchData = (searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
                 searchData.sort(new Comparator<SearchDto>() {
                     @Override
                     public int compare(SearchDto o1, SearchDto o2) {

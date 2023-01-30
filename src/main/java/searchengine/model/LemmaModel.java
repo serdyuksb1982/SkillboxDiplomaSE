@@ -11,6 +11,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Table(name = "lemma")
+@EqualsAndHashCode
 public class LemmaModel {
 
     /*id INT NOT NULL AUTO_INCREMENT;
