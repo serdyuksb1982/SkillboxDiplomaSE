@@ -38,7 +38,7 @@ public class ApiController {
     @ApiOperation("Get all statistics")
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> getStatistics() {
-        return ResponseEntity.ok(statisticsService.getStatistics());
+        return ResponseEntity.ok(statisticsService.getStatisticsResponse());
     }
 
     @ApiOperation("Start parsing web")
@@ -80,10 +80,10 @@ public class ApiController {
                 if (siteRepository.findByUrl(site) == null) {
                     return new ResponseEntity<>(new ResponseDto(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
                 } else {
-                    searchData = searchStarter.siteSearch(query, site, offset, limit);
+                    searchData = searchStarter.getSearchFromOneSite(query, site, offset, limit);
                 }
             } else {
-                searchData = searchStarter.fullSiteSearch(query, offset, limit);
+                searchData = searchStarter.getFullSearch(query, offset, limit);
             }
             return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
         }

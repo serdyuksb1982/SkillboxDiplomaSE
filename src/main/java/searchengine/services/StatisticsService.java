@@ -23,14 +23,14 @@ public class StatisticsService {
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
 
-    private TotalStatistics getTotal() {
+    private TotalStatistics getTotalStatistics() {
         long sites = siteRepository.count();
         long pages = pageRepository.count();
         long lemmas = lemmaRepository.count();
         return new TotalStatistics(sites, pages, lemmas, true);
     }
 
-    private DetailedStatisticsItem getDetailed(SiteModel site) {
+    private DetailedStatisticsItem getDetailedFromDetailedStatisticItem(SiteModel site) {
         String url = site.getUrl();
         String name = site.getName();
         String status = site.getStatus().toString();
@@ -41,19 +41,19 @@ public class StatisticsService {
         return new DetailedStatisticsItem(url, name, status, statusTime, error, pages, lemmas);
     }
 
-    private List<DetailedStatisticsItem> getDetailedList() {
+    private List<DetailedStatisticsItem> getDetailedStatisticsItemList() {
         List<SiteModel> siteList = siteRepository.findAll();
         List<DetailedStatisticsItem> result = new ArrayList<>();
         for (SiteModel site : siteList) {
-            DetailedStatisticsItem item = getDetailed(site);
+            DetailedStatisticsItem item = getDetailedFromDetailedStatisticItem(site);
             result.add(item);
         }
         return result;
     }
 
-    public StatisticsResponse getStatistics() {
-        TotalStatistics total = getTotal();
-        List<DetailedStatisticsItem> list = getDetailedList();
+    public StatisticsResponse getStatisticsResponse() {
+        TotalStatistics total = getTotalStatistics();
+        List<DetailedStatisticsItem> list = getDetailedStatisticsItemList();
         return new StatisticsResponse(true, new StatisticsData(total, list));
     }
 }

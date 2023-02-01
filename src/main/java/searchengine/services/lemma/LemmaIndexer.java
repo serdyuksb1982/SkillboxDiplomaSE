@@ -1,5 +1,6 @@
 package searchengine.services.lemma;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -17,6 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
 @RequiredArgsConstructor
+@Getter
 @Slf4j
 public class LemmaIndexer {
     private final PageRepository pageRepository;
@@ -58,9 +60,5 @@ public class LemmaIndexer {
             html.append(el.html());
         }
         return Jsoup.parse(html.toString()).text();
-    }
-
-    public List<LemmaDto> getLemmaDtoList() {
-        return lemmaDtoList;
     }
 }

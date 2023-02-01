@@ -29,8 +29,8 @@ public class SearchService {
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
 
-    private List<SearchDto> getSearchData(ConcurrentHashMap<PageModel, Float> pageList,
-                                          List<String> textLemmaList) {
+    private List<SearchDto> getSearchDtoList(ConcurrentHashMap<PageModel, Float> pageList,
+                                             List<String> textLemmaList) {
         List<SearchDto> searchDtoList = new ArrayList<>();
         for (PageModel page : pageList.keySet()) {
             String uri = page.getPath();
@@ -73,7 +73,6 @@ public class SearchService {
                 next = next + 1;
             }
             i = next - 1;
-
             String word = content.substring(start, end);
             int startIndex;
             int nextIndex;
@@ -84,18 +83,14 @@ public class SearchService {
                 nextIndex = content.indexOf(" ", end + 30);
             } else nextIndex = content.indexOf(" ", end);
             String text = content.substring(startIndex, nextIndex);
-
             text = text.replaceAll(word, "<b>".concat(word).concat("</b>"));
-
-
-            result.add(text);
-        }
+            result.add(text);        }
         result.sort(Comparator.comparing(String::length).reversed());
         return result;
     }
 
-    private ConcurrentHashMap<PageModel, Float> getPageAbsRelevance(List<PageModel> pageList,
-                                                                    List<IndexModel> indexList) {
+    private Map<PageModel, Float> getPageAbsRelevance(List<PageModel> pageList,
+                                                      List<IndexModel> indexList) {
         Map<PageModel, Float> relevanceMap = new HashMap<>();
         for (PageModel page : pageList) {
             float relevance = 0;
@@ -124,7 +119,7 @@ public class SearchService {
         return map;
     }
 
-    public List<LemmaModel> getLemmaListFromSite(List<String> lemmas, SiteModel site) {
+    public List<LemmaModel> getLemmaModelFromSite(List<String> lemmas, SiteModel site) {
         lemmaRepository.flush();
         List<LemmaModel> lemmaModels = lemmaRepository.findLemmaListBySite(lemmas, site);
         List<LemmaModel> result = new ArrayList<>(lemmaModels);
@@ -155,8 +150,8 @@ public class SearchService {
             List<PageModel> pagesList = pageRepository.findByLemmaList(lemmaList);
             indexRepository.flush();
             List<IndexModel> indexesList = indexRepository.findByPageAndLemmas(lemmaList, pagesList);
-            ConcurrentHashMap<PageModel, Float> relevanceMap = getPageAbsRelevance(pagesList, indexesList);
-            List<SearchDto> searchDtos = getSearchData(relevanceMap, textLemmaList);
+            Map<PageModel, Float> relevanceMap = getPageAbsRelevance(pagesList, indexesList);
+            List<SearchDto> searchDtos = getSearchDtoList((ConcurrentHashMap<PageModel, Float>) relevanceMap, textLemmaList);
             if (start > searchDtos.size()) {
                 return new ArrayList<>();
             }

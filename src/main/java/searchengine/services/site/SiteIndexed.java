@@ -101,7 +101,7 @@ public class SiteIndexed implements Runnable {
 
             if (!Thread.interrupted()) {
                 indexParser.startWebParser(site);
-                List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
+                List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexDtos());
                 List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
                 site.setStatusTime(new Date());
                 for (IndexDto indexDto : indexDtoList) {

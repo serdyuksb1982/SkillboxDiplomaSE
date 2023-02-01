@@ -46,14 +46,15 @@ public class IndexingService {
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
                 log.info("Indexing web site ".concat(site.getName()));
-                executorService.submit(new SiteIndexed(pageRepository,
-                        siteRepository,
-                        lemmaRepository,
-                        indexRepository,
-                        lemmaIndexer,
-                        webParser,
-                        url,
-                        config));
+                executorService.submit(new SiteIndexed( pageRepository,
+                                                        siteRepository,
+                                                        lemmaRepository,
+                                                        indexRepository,
+                                                        lemmaIndexer,
+                                                        webParser,
+                                                        url,
+                                                        config)
+                );
             }
             executorService.shutdown();
         }
@@ -83,17 +84,18 @@ public class IndexingService {
     }
 
     public boolean urlIndexing(String url) {
-        if (urlCheck(url)) {
+        if (isUrlSiteEquals(url)) {
             log.info("Начата переиндексация сайта - " + url);
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            executorService.submit(new SiteIndexed(pageRepository,
-                    siteRepository,
-                    lemmaRepository,
-                    indexRepository,
-                    lemmaIndexer,
-                    webParser,
-                    url,
-                    config));
+            executorService.submit(new SiteIndexed( pageRepository,
+                                                    siteRepository,
+                                                    lemmaRepository,
+                                                    indexRepository,
+                                                    lemmaIndexer,
+                                                    webParser,
+                                                    url,
+                                                    config)
+            );
             executorService.shutdown();
             return true;
         } else {
@@ -102,7 +104,7 @@ public class IndexingService {
         
     }
 
-    private boolean urlCheck(String url) {
+    private boolean isUrlSiteEquals(String url) {
         List<Site> urlList = config.getSites();
         for (Site site : urlList) {
             if (site.getUrl().equals(url)) {

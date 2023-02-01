@@ -1,5 +1,6 @@
 package searchengine.services.index;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -23,6 +24,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Getter
 @Slf4j
 public class WebParser {
     private final PageRepository pageRepository;
@@ -76,9 +78,5 @@ public class WebParser {
             stringBuilder.append(el.html());
         }
         return Jsoup.parse(stringBuilder.toString()).text();
-    }
-
-    public List<IndexDto> getIndexList() {
-        return indexDtos;
     }
 }

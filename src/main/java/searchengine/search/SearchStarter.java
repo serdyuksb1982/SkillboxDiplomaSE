@@ -19,17 +19,17 @@ public class SearchStarter {
 
     private final SearchService searchService;
 
-    public List<SearchDto> siteSearch(String text,
+    public List<SearchDto> getSearchFromOneSite(String text,
                                       String url,
                                       int start,
                                       int limit) {
         SiteModel site = siteRepository.findByUrl(url);
         List<String> textLemmaList = searchService.getLemmaFromSearchText(text);
-        List<LemmaModel> foundLemmaList = searchService.getLemmaListFromSite(textLemmaList, site);
+        List<LemmaModel> foundLemmaList = searchService.getLemmaModelFromSite(textLemmaList, site);
         return searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit);
     }
 
-    public List<SearchDto> fullSiteSearch(String text,
+    public List<SearchDto> getFullSearch(String text,
                                           int start,
                                           int limit) {
         List<SiteModel> siteList = siteRepository.findAll();
@@ -37,7 +37,7 @@ public class SearchStarter {
         List<LemmaModel> foundLemmaList = new ArrayList<>();
         List<String> textLemmaList = searchService.getLemmaFromSearchText(text);
         for (SiteModel site : siteList) {
-            foundLemmaList.addAll(searchService.getLemmaListFromSite(textLemmaList, site));
+            foundLemmaList.addAll(searchService.getLemmaModelFromSite(textLemmaList, site));
         }
         List<SearchDto> searchData = new ArrayList<>();
         for (LemmaModel l : foundLemmaList) {
@@ -54,12 +54,6 @@ public class SearchStarter {
                         result.add(searchData.get(i));
                     }
                     return result;
-                }
-            } else {
-                try {
-                    throw new Exception();
-                } catch (Exception e) {
-                    throw new RuntimeException();
                 }
             }
         }
