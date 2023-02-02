@@ -135,7 +135,7 @@ public class SearchService {
                 List<String> list = morphology.getLemma(lemma);
                 lemmaList.addAll(list);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.getMessage();
             }
         }
         return lemmaList;
