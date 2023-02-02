@@ -16,6 +16,7 @@ import searchengine.services.StatisticsService;
 import searchengine.search.SearchStarter;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -56,13 +57,8 @@ public class ApiController {
     @ApiOperation("Index pages")
     @PostMapping("/indexPage")
     public ResponseEntity<Object> indexPage(@RequestParam(name = "url") String url) {
-        if (url.isEmpty()) {
-            log.info("Страница не указана");
-            return new ResponseEntity<>( new ResponseDto(false, "Error"), HttpStatus.BAD_REQUEST);
-        } else {
-            log.info("Страница - " + url + " - добавлена на переиндексацию");
-            return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
-        }
+        if (url.isEmpty()) return new ResponseEntity<>( new ResponseDto(false, "Error"), HttpStatus.BAD_REQUEST);
+         else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
     }
 
     @ApiOperation("Search in sites")
@@ -71,10 +67,7 @@ public class ApiController {
                                          @RequestParam(name = "site", required = false, defaultValue = "") String site,
                                          @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
                                          @RequestParam(name = "limit", required = false, defaultValue = "30") int limit) {
-        if (query.isEmpty()) {
-            log.info("Query is empty");
-            return new ResponseEntity<>(new ResponseDto(false, "Задан пустой поисковый запрос"), HttpStatus.BAD_REQUEST);
-        } else {
+
             List<SearchDto> searchData;
             if (!site.isEmpty()) {
                 if (siteRepository.findByUrl(site) == null) {
@@ -86,6 +79,6 @@ public class ApiController {
                 searchData = searchStarter.getFullSearch(query, offset, limit);
             }
             return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
-        }
+
     }
 }

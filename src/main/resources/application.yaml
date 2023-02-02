@@ -41,5 +41,5 @@ indexing-settings:
       #name: PlayBack.Ru
     #- url: http://redmine-reports.soctech.loc
       #name: Soctech.loc
-  userAgent: Mozilla/5.0 (Windows NT 6.1; rv:98.0) Gecko/20100101 Firefox/98.0
+  userAgent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6
   referrer: http://www.google.com

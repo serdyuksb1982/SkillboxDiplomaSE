@@ -40,8 +40,6 @@ public class IndexingService {
             List<Site> siteList = config.getSites();
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
-                //Optional<String> url = Optional
-
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
@@ -60,7 +58,6 @@ public class IndexingService {
         }
         return true;
     }
-
 
     public boolean stopIndexing() {
         if (isIndexingActive()) {
