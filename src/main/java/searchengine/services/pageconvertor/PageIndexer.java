@@ -35,7 +35,6 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
 
     @Override
     protected List<PageDto> compute() {
-
         try {
             Thread.sleep(100);
             Document doc = null;
@@ -48,8 +47,6 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             } catch (Exception e) {
                 e.getMessage();
             }
-
-
             assert doc != null;
             String html = doc.outerHtml();
             Connection.Response response = doc.connection().response();
@@ -62,8 +59,10 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             for (Element el : elements) {
                 String link = el.attr("abs:href");
                 if (isSiteElementsType(link)) {
-                    if (link.startsWith(el.baseUri()) && !link.equals(el.baseUri())
-                            && !link.contains("#") && !urlList.contains(link)) {
+                    if (link.startsWith(el.baseUri())
+                            && !link.equals(el.baseUri())
+                            && !link.contains("#")
+                            && !urlList.contains(link)) {
                         urlList.add(link);
                         PageIndexer task = new PageIndexer(link, pageDtoList, urlList, config);
                         task.fork();
@@ -82,15 +81,8 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
 
     private boolean isSiteElementsType(String pathPage) {
         List<String> WRONG_TYPES = Arrays.asList(
-                "jpeg", "jpg", "pdf",
-                "png", "gif", "zip",
-                "tar", "jar", "gz",
-                "svg", "ppt", "pptx",
-                "svg", "JPG");
-        if (!WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1))) {
-            return true;
-        }
-        else return false;
+                "JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip");
+        return !WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
     }
 
 
