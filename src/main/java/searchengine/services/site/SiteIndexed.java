@@ -33,8 +33,8 @@ public class SiteIndexed implements Runnable {
     private final SiteRepository siteRepository;
     private final LemmaRepository lemmaRepository;
     private final IndexRepository indexRepository;
-    private final LemmaIndexer lemmaParser;
-    private final WebParser indexParser;
+    private final LemmaIndexer lemmaIndexer;
+    private final WebParser webParser;
     private final String url;
     private final SitesList config;
 
@@ -86,8 +86,8 @@ public class SiteIndexed implements Runnable {
             if (!Thread.interrupted()) {
                 SiteModel siteModel = siteRepository.findByUrl(url);
                 siteModel.setStatusTime(new Date());
-                lemmaParser.startLemmaIndexer();
-                List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
+                lemmaIndexer.startLemmaIndexer();
+                List<LemmaDto> lemmaDtoList = lemmaIndexer.getLemmaDtoList();
                 List<LemmaModel> lemmaList = new CopyOnWriteArrayList<>();
 
                 for (LemmaDto lemmaDto : lemmaDtoList) {
@@ -100,8 +100,8 @@ public class SiteIndexed implements Runnable {
             }
 
             if (!Thread.interrupted()) {
-                indexParser.startWebParser(site);
-                List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
+                webParser.startWebParser(site);
+                List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(webParser.getConfig());
                 List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
                 site.setStatusTime(new Date());
                 for (IndexDto indexDto : indexDtoList) {

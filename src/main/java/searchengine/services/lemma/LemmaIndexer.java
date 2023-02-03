@@ -1,5 +1,6 @@
 package searchengine.services.lemma;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 import searchengine.dto.LemmaDto;
 import searchengine.lemma.LemmaEngine;
 import searchengine.model.PageModel;
-import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
 
 import java.util.*;
@@ -19,17 +19,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Getter
 public class LemmaIndexer {
     private final PageRepository pageRepository;
     private final LemmaEngine lemmaEngine;
     private List<LemmaDto> lemmaDtoList;
 
-
     public void startLemmaIndexer() {
         lemmaDtoList = new CopyOnWriteArrayList<>();
         Iterable<PageModel> pageList = pageRepository.findAll();
 
-        TreeMap<String, Integer> lemmaList = new TreeMap<>();
+        Map<String, Integer> lemmaList = new TreeMap<>();
         for (PageModel page : pageList) {
             String content = page.getContent();
             String title = clearHtml(content, "title");
@@ -59,9 +59,5 @@ public class LemmaIndexer {
             html.append(el.html());
         }
         return Jsoup.parse(html.toString()).text();
-    }
-
-    public List<LemmaDto> getLemmaDtoList() {
-        return lemmaDtoList;
     }
 }
