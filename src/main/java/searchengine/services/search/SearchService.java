@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class SearchService {
-    private final LemmaEngine morphology;
+    private final LemmaEngine lemmaEngine;
     private final LemmaRepository lemmaRepository;
     private final PageRepository pageRepository;
     private final IndexRepository indexRepository;
@@ -52,7 +52,7 @@ public class SearchService {
                 int i = 0;
                 while (i < textLemmaList.size()) {
                     String lemma = textLemmaList.get(i);
-                    lemmaIndex.addAll(morphology.findLemmaIndexInText(stringBuilder.toString(), lemma));
+                    lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
                     i++;
                 }
             }
@@ -163,7 +163,7 @@ public class SearchService {
         while (i < words.length) {
             String lemma = words[i];
             try {
-                List<String> list = morphology.getLemma(lemma);
+                List<String> list = lemmaEngine.getLemma(lemma);
                 lemmaList.addAll(list);
             } catch (Exception e) {
                 e.getMessage();
