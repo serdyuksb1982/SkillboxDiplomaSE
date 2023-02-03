@@ -15,6 +15,7 @@ import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.site.SiteIndexed;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,26 +39,27 @@ public class IndexingService {
             return false;
         } else {
             List<Site> siteList = config.getSites();
-            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            executorService = Executors.
+                    newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
                 log.info("Indexing web site ".concat(site.getName()));
-                executorService.submit(new SiteIndexed(pageRepository,
-                        siteRepository,
-                        lemmaRepository,
-                        indexRepository,
-                        lemmaIndexer,
-                        webParser,
-                        url,
-                        config));
+                executorService.submit(new SiteIndexed( pageRepository,
+                                                        siteRepository,
+                                                        lemmaRepository,
+                                                        indexRepository,
+                                                        lemmaIndexer,
+                                                        webParser,
+                                                        url,
+                                                        config)
+                );
             }
             executorService.shutdown();
         }
         return true;
     }
-
 
     public boolean stopIndexing() {
         if (isIndexingActive()) {
@@ -72,12 +74,40 @@ public class IndexingService {
     private boolean isIndexingActive() {
         siteRepository.flush();
         Iterable<SiteModel> siteList = siteRepository.findAll();
-        for (SiteModel site : siteList) {
+        Iterator<SiteModel> iterator = siteList.iterator();
+        while (iterator.hasNext()) {
+            SiteModel site = iterator.next();
             if (site.getStatus() == Status.INDEXING) {
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean urlIndexing(String url) {
+        if (isUrlSiteEquals(url)) {
+            log.info("Начата переиндексация сайта - " + url);
+            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            executorService.submit(new SiteIndexed( pageRepository,
+                                                    siteRepository,
+                                                    lemmaRepository,
+                                                    indexRepository,
+                                                    lemmaIndexer,
+                                                    webParser,
+                                                    url,
+                                                    config)
+            );
+            executorService.shutdown();
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+
+    private boolean isUrlSiteEquals(String url) {
+        List<Site> urlList = config.getSites();
+        return urlList.stream().anyMatch(site -> site.getUrl().equals(url));
     }
 
 }

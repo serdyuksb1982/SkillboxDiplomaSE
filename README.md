@@ -50,6 +50,11 @@ DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4".
 
 ## Read this before starting
 
+- Spring Security identification InMemoryUserDetailsManager <br>
+  user name: user <br>
+  password: password
+
+
 - Create an empty database **search_engine**
  ``` roomsql
 create database search_engine, migrate tables -> flyway;
@@ -57,7 +62,6 @@ create database search_engine, migrate tables -> flyway;
 
 - Change the datasource setting in application.yaml.
  ``` yaml
-
   flyway:
     create-schemas: true
     locations: classpath:db/migration
@@ -78,6 +82,4 @@ create database search_engine, migrate tables -> flyway;
       
    http://localhost:8080/v2/api-docs   
       
-***      
-
-
+***

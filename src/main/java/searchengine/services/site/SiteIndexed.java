@@ -58,6 +58,10 @@ public class SiteIndexed implements Runnable {
         site.setStatusTime(new Date());
         siteRepository.flush();
         siteRepository.save(site);
+        startForkJoinPoolExecutor(site);
+    }
+
+    private void startForkJoinPoolExecutor(SiteModel site) {
         try {
             if (!Thread.interrupted()) {
                 List<PageDto> pageDtoList;
@@ -71,11 +75,14 @@ public class SiteIndexed implements Runnable {
                 } else throw new InterruptedException();
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
 
-                for (PageDto page : pageDtoList) {
+                int i = 0;
+                while (i < pageDtoList.size()) {
+                    PageDto page = pageDtoList.get(i);
                     int start = page.getUrl().indexOf(url) + url.length();
                     String pageFormat = page.getUrl().substring(start);
                     pageList.add(new PageModel(site, pageFormat, page.getCode(),
                             page.getContent()));
+                    i++;
                 }
                 pageRepository.flush();
                 pageRepository.saveAll(pageList);
@@ -83,42 +90,9 @@ public class SiteIndexed implements Runnable {
                 throw new InterruptedException();
             }
 
-            if (!Thread.interrupted()) {
-                SiteModel siteModel = siteRepository.findByUrl(url);
-                siteModel.setStatusTime(new Date());
-                lemmaParser.startLemmaIndexer();
-                List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
-                List<LemmaModel> lemmaList = new CopyOnWriteArrayList<>();
+            taskFromCreateLemmaModelList();
 
-                for (LemmaDto lemmaDto : lemmaDtoList) {
-                    lemmaList.add(new LemmaModel(lemmaDto.getLemma(), lemmaDto.getFrequency(), siteModel));
-                }
-                lemmaRepository.flush();
-                lemmaRepository.saveAll(lemmaList);
-            } else {
-                throw new RuntimeException();
-            }
-
-            if (!Thread.interrupted()) {
-                indexParser.startWebParser(site);
-                List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexList());
-                List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
-                site.setStatusTime(new Date());
-                for (IndexDto indexDto : indexDtoList) {
-                    PageModel page = pageRepository.getById(indexDto.getPageID());
-                    LemmaModel lemma = lemmaRepository.getById(indexDto.getLemmaID());
-                    indexModels.add(new IndexModel(page, lemma, indexDto.getRank()));
-                }
-                indexRepository.flush();
-                indexRepository.saveAll(indexModels);
-                log.info("WebParser stopping ".concat(url));
-                site.setStatusTime(new Date());
-                site.setStatus(Status.INDEXED);
-                siteRepository.save(site);
-
-            } else {
-                throw new InterruptedException();
-            }
+            taskFromCreateSiteModelList(site);
 
         } catch (InterruptedException e) {
             log.error("WebParser stopped from ".concat(url).concat(". ").concat(e.getMessage()));
@@ -130,12 +104,58 @@ public class SiteIndexed implements Runnable {
         }
     }
 
+    private void taskFromCreateSiteModelList(SiteModel site) throws InterruptedException {
+        if (!Thread.interrupted()) {
+            indexParser.startWebParser(site);
+            List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexDtos());
+            List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
+            site.setStatusTime(new Date());
+            int i = 0;
+            while (i < indexDtoList.size()) {
+                IndexDto indexDto = indexDtoList.get(i);
+                PageModel page = pageRepository.getById(indexDto.getPageID());
+                LemmaModel lemma = lemmaRepository.getById(indexDto.getLemmaID());
+                indexModels.add(new IndexModel(page, lemma, indexDto.getRank()));
+                i++;
+            }
+            indexRepository.flush();
+            indexRepository.saveAll(indexModels);
+            log.info("WebParser stopping ".concat(url));
+            site.setStatusTime(new Date());
+            site.setStatus(Status.INDEXED);
+            siteRepository.save(site);
+
+        }
+    }
+
+    private void taskFromCreateLemmaModelList() throws RuntimeException {
+        if (!Thread.interrupted()) {
+            SiteModel siteModel = siteRepository.findByUrl(url);
+            siteModel.setStatusTime(new Date());
+            lemmaParser.startLemmaIndexer();
+            List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
+            List<LemmaModel> lemmaModelFromSiteParsing = new CopyOnWriteArrayList<>();
+
+            int i = 0;
+            while (i < lemmaDtoList.size()) {
+                LemmaDto lemmaDto = lemmaDtoList.get(i);
+                lemmaModelFromSiteParsing.add(new LemmaModel(lemmaDto.getLemma(), lemmaDto.getFrequency(), siteModel));
+                i++;
+            }
+            lemmaRepository.flush();
+            lemmaRepository.saveAll(lemmaModelFromSiteParsing);
+        }
+    }
+
     private String getSiteName() {
         List<Site> sites = config.getSites();
-        for (Site site : sites) {
+        int i = 0;
+        while (i < sites.size()) {
+            Site site = sites.get(i);
             if (site.getUrl().equals(url)) {
                 return site.getName();
             }
+            i++;
         }
         return "";
     }

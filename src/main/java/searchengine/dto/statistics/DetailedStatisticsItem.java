@@ -3,8 +3,6 @@ package searchengine.dto.statistics;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import searchengine.model.enums.Status;
-
 import java.util.Date;
 
 @Data

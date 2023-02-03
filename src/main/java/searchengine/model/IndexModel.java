@@ -10,6 +10,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Table(name = "words_index")
+@EqualsAndHashCode
 public class IndexModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;

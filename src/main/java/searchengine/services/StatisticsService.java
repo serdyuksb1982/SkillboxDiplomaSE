@@ -7,7 +7,6 @@ import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
 import searchengine.model.SiteModel;
-import searchengine.model.enums.Status;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 import searchengine.repository.SiteRepository;
@@ -16,6 +15,7 @@ import searchengine.repository.SiteRepository;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,14 +24,14 @@ public class StatisticsService {
     private final LemmaRepository lemmaRepository;
     private final SiteRepository siteRepository;
 
-    private TotalStatistics getTotal() {
+    private TotalStatistics getTotalStatistics() {
         long sites = siteRepository.count();
         long pages = pageRepository.count();
         long lemmas = lemmaRepository.count();
         return new TotalStatistics(sites, pages, lemmas, true);
     }
 
-    private DetailedStatisticsItem getDetailed(SiteModel site) {
+    private DetailedStatisticsItem getDetailedFromDetailedStatisticItem(SiteModel site) {
         String url = site.getUrl();
         String name = site.getName();
         String status = site.getStatus().toString();
@@ -42,19 +42,14 @@ public class StatisticsService {
         return new DetailedStatisticsItem(url, name, status, statusTime, error, pages, lemmas);
     }
 
-    private List<DetailedStatisticsItem> getDetailedList() {
+    private List<DetailedStatisticsItem> getDetailedStatisticsItemList() {
         List<SiteModel> siteList = siteRepository.findAll();
-        List<DetailedStatisticsItem> result = new ArrayList<>();
-        for (SiteModel site : siteList) {
-            DetailedStatisticsItem item = getDetailed(site);
-            result.add(item);
-        }
-        return result;
+        return siteList.stream().map(this::getDetailedFromDetailedStatisticItem).collect(Collectors.toList());
     }
 
-    public StatisticsResponse getStatistics() {
-        TotalStatistics total = getTotal();
-        List<DetailedStatisticsItem> list = getDetailedList();
+    public StatisticsResponse getStatisticsResponse() {
+        TotalStatistics total = getTotalStatistics();
+        List<DetailedStatisticsItem> list = getDetailedStatisticsItemList();
         return new StatisticsResponse(true, new StatisticsData(total, list));
     }
 }

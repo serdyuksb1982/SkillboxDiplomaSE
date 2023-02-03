@@ -1,5 +1,6 @@
 package searchengine.services.lemma;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -10,14 +11,15 @@ import org.springframework.stereotype.Component;
 import searchengine.dto.LemmaDto;
 import searchengine.lemma.LemmaEngine;
 import searchengine.model.PageModel;
-import searchengine.model.SiteModel;
 import searchengine.repository.PageRepository;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Getter
 @Slf4j
 public class LemmaIndexer {
     private final PageRepository pageRepository;
@@ -30,7 +32,9 @@ public class LemmaIndexer {
         Iterable<PageModel> pageList = pageRepository.findAll();
 
         TreeMap<String, Integer> lemmaList = new TreeMap<>();
-        for (PageModel page : pageList) {
+        Iterator<PageModel> iterator = pageList.iterator();
+        while (iterator.hasNext()) {
+            PageModel page = iterator.next();
             String content = page.getContent();
             String title = clearHtml(content, "title");
             String body = clearHtml(content, "body");
@@ -39,29 +43,26 @@ public class LemmaIndexer {
             Set<String> allWords = new HashSet<>();
             allWords.addAll(titleList.keySet());
             allWords.addAll(bodyList.keySet());
-            for (String word : allWords) {
+            Iterator<String> iter = allWords.iterator();
+            while (iter.hasNext()) {
+                String word = iter.next();
                 int frequency = lemmaList.getOrDefault(word, 0) + 1;
                 lemmaList.put(word, frequency);
             }
         }
-        for (String lemma : lemmaList.keySet()) {
+        Iterator<String> iter = lemmaList.keySet().iterator();
+        while (iter.hasNext()) {
+            String lemma = iter.next();
             Integer frequency = lemmaList.get(lemma);
             lemmaDtoList.add(new LemmaDto(lemma, frequency));
         }
     }
 
-    public String clearHtml(String content, String tag) {
-        StringBuilder html = new StringBuilder();
-        Document doc = Jsoup.parse(content);
-        Elements elements = doc.select(tag);
-        for (int i = 0; i < elements.size(); i++) {
-            Element el = elements.get(i);
-            html.append(el.html());
-        }
-        return Jsoup.parse(html.toString()).text();
-    }
-
-    public List<LemmaDto> getLemmaDtoList() {
-        return lemmaDtoList;
+    public String clearHtml(String text, String element) {
+        String stringBuilder;
+        Document doc = Jsoup.parse(text);
+        Elements elements = doc.select(element);
+        stringBuilder = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(stringBuilder).text();
     }
 }

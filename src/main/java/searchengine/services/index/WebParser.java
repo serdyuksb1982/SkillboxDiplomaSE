@@ -1,5 +1,6 @@
 package searchengine.services.index;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -18,24 +19,29 @@ import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Getter
 @Slf4j
 public class WebParser {
     private final PageRepository pageRepository;
     private final LemmaRepository lemmaRepository;
     private final LemmaEngine lemmaEngine;
-    private List<IndexDto> config;
+    private List<IndexDto> indexDtos;
     
     public void startWebParser(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
-        config = new ArrayList<>();
+        indexDtos = new ArrayList<>();
 
-        for (PageModel page : pageList) {
+        Iterator<PageModel> iterator = pageList.iterator();
+        while (iterator.hasNext()) {
+            PageModel page = iterator.next();
             if (page.getCode() < 400) {
                 long pageId = page.getId();
                 String content = page.getContent();
@@ -44,11 +50,13 @@ public class WebParser {
                 Map<String, Integer> titleList = lemmaEngine.getLemmaMap(title);
                 Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
 
-                for (LemmaModel lemma : lemmaList) {
-                    Long lemmaId = lemma.getId();
+                int i = 0;
+                while (i < lemmaList.size()) {
+                    LemmaModel lemma = lemmaList.get(i);
+                    long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
-                        float totalRank = 0.0F;
+                        float totalRank = 0.0f;
                         if (titleList.get(keyWord) != null) {
                             float titleRank = Float.valueOf(titleList.get(keyWord));
                             totalRank += titleRank;
@@ -57,10 +65,11 @@ public class WebParser {
                             float bodyRank = (float) (bodyList.get(keyWord) * 0.8);
                             totalRank += bodyRank;
                         }
-                        config.add(new IndexDto(pageId, lemmaId, totalRank));
+                        indexDtos.add(new IndexDto(pageId, lemmaId, totalRank));
                     } else {
                         log.debug("Lemma not found");
                     }
+                    i++;
                 }
             } else {
                 log.debug("Bad status code - " + page.getCode());
@@ -68,17 +77,11 @@ public class WebParser {
         }
     }
 
-    public  String clearCodeFromTag(String content, String s) {
-        StringBuilder stringBuilder = new StringBuilder();
-        Document doc = Jsoup.parse(content);
-        Elements elements = doc.select(s);
-        for (Element el : elements) {
-            stringBuilder.append(el.html());
-        }
-        return Jsoup.parse(stringBuilder.toString()).text();
-    }
-
-    public List<IndexDto> getIndexList() {
-        return config;
+    public  String clearCodeFromTag(String text, String element) {
+        String stringBuilder;
+        Document doc = Jsoup.parse(text);
+        Elements elements = doc.select(element);
+        stringBuilder = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(stringBuilder).text();
     }
 }
