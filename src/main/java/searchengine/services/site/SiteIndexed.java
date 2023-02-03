@@ -75,11 +75,14 @@ public class SiteIndexed implements Runnable {
                 } else throw new InterruptedException();
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
 
-                for (PageDto page : pageDtoList) {
+                int i = 0;
+                while (i < pageDtoList.size()) {
+                    PageDto page = pageDtoList.get(i);
                     int start = page.getUrl().indexOf(url) + url.length();
                     String pageFormat = page.getUrl().substring(start);
                     pageList.add(new PageModel(site, pageFormat, page.getCode(),
                             page.getContent()));
+                    i++;
                 }
                 pageRepository.flush();
                 pageRepository.saveAll(pageList);
@@ -107,10 +110,13 @@ public class SiteIndexed implements Runnable {
             List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(indexParser.getIndexDtos());
             List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
             site.setStatusTime(new Date());
-            for (IndexDto indexDto : indexDtoList) {
+            int i = 0;
+            while (i < indexDtoList.size()) {
+                IndexDto indexDto = indexDtoList.get(i);
                 PageModel page = pageRepository.getById(indexDto.getPageID());
                 LemmaModel lemma = lemmaRepository.getById(indexDto.getLemmaID());
                 indexModels.add(new IndexModel(page, lemma, indexDto.getRank()));
+                i++;
             }
             indexRepository.flush();
             indexRepository.saveAll(indexModels);
@@ -130,8 +136,11 @@ public class SiteIndexed implements Runnable {
             List<LemmaDto> lemmaDtoList = lemmaParser.getLemmaDtoList();
             List<LemmaModel> lemmaModelFromSiteParsing = new CopyOnWriteArrayList<>();
 
-            for (LemmaDto lemmaDto : lemmaDtoList) {
+            int i = 0;
+            while (i < lemmaDtoList.size()) {
+                LemmaDto lemmaDto = lemmaDtoList.get(i);
                 lemmaModelFromSiteParsing.add(new LemmaModel(lemmaDto.getLemma(), lemmaDto.getFrequency(), siteModel));
+                i++;
             }
             lemmaRepository.flush();
             lemmaRepository.saveAll(lemmaModelFromSiteParsing);
@@ -140,10 +149,13 @@ public class SiteIndexed implements Runnable {
 
     private String getSiteName() {
         List<Site> sites = config.getSites();
-        for (Site site : sites) {
+        int i = 0;
+        while (i < sites.size()) {
+            Site site = sites.get(i);
             if (site.getUrl().equals(url)) {
                 return site.getName();
             }
+            i++;
         }
         return "";
     }

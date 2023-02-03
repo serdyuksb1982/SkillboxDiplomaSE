@@ -15,6 +15,7 @@ import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.site.SiteIndexed;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +39,8 @@ public class IndexingService {
             return false;
         } else {
             List<Site> siteList = config.getSites();
-            executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            executorService = Executors.
+                    newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             for (Site site : siteList) {
                 String url = site.getUrl();
                 SiteModel siteModel = new SiteModel();
@@ -72,7 +74,9 @@ public class IndexingService {
     private boolean isIndexingActive() {
         siteRepository.flush();
         Iterable<SiteModel> siteList = siteRepository.findAll();
-        for (SiteModel site : siteList) {
+        Iterator<SiteModel> iterator = siteList.iterator();
+        while (iterator.hasNext()) {
+            SiteModel site = iterator.next();
             if (site.getStatus() == Status.INDEXING) {
                 return true;
             }
@@ -103,12 +107,7 @@ public class IndexingService {
 
     private boolean isUrlSiteEquals(String url) {
         List<Site> urlList = config.getSites();
-        for (Site site : urlList) {
-            if (site.getUrl().equals(url)) {
-                return true;
-            }
-        }
-        return false;
+        return urlList.stream().anyMatch(site -> site.getUrl().equals(url));
     }
 
 }

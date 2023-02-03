@@ -36,8 +36,13 @@ public class SearchStarter {
         List<SearchDto> result = new ArrayList<>();
         List<LemmaModel> foundLemmaList = new ArrayList<>();
         List<String> textLemmaList = searchService.getLemmaFromSearchText(text);
-        for (SiteModel site : siteList) {
-            foundLemmaList.addAll(searchService.getLemmaModelFromSite(textLemmaList, site));
+        {
+            int i = 0;
+            while (i < siteList.size()) {
+                SiteModel site = siteList.get(i);
+                foundLemmaList.addAll(searchService.getLemmaModelFromSite(textLemmaList, site));
+                i++;
+            }
         }
         List<SearchDto> searchData = new ArrayList<>();
         for (LemmaModel l : foundLemmaList) {
@@ -50,8 +55,10 @@ public class SearchStarter {
                     }
                 });
                 if (searchData.size() > limit) {
-                    for (int i = start; i < limit; i++) {
+                    int i = start;
+                    while (i < limit) {
                         result.add(searchData.get(i));
+                        i++;
                     }
                     return result;
                 }

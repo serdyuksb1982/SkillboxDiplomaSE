@@ -15,6 +15,7 @@ import searchengine.repository.SiteRepository;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,12 +44,7 @@ public class StatisticsService {
 
     private List<DetailedStatisticsItem> getDetailedStatisticsItemList() {
         List<SiteModel> siteList = siteRepository.findAll();
-        List<DetailedStatisticsItem> result = new ArrayList<>();
-        for (SiteModel site : siteList) {
-            DetailedStatisticsItem item = getDetailedFromDetailedStatisticItem(site);
-            result.add(item);
-        }
-        return result;
+        return siteList.stream().map(this::getDetailedFromDetailedStatisticItem).collect(Collectors.toList());
     }
 
     public StatisticsResponse getStatisticsResponse() {

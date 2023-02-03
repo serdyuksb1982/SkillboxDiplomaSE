@@ -81,11 +81,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
 
     private boolean isSiteElementsType(String pathPage) {
         List<String> WRONG_TYPES = Arrays.asList(
-                "jpeg", "jpg", "pdf",
-                "png", "gif", "zip",
-                "tar", "jar", "gz",
-                "svg", "ppt", "pptx",
-                "svg", "JPG");
+                new String[]{"JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip"});
         return !WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
     }
 

@@ -14,6 +14,7 @@ import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
 import searchengine.search.SearchStarter;
+import searchengine.services.search.SearchService;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,18 +66,19 @@ public class ApiController {
     @GetMapping("/search")
     public ResponseEntity<Object> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                                          @RequestParam(name = "site", required = false, defaultValue = "") String site,
-                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
-                                         @RequestParam(name = "limit", required = false, defaultValue = "30") int limit) {
+                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset)
+    {
 
             List<SearchDto> searchData;
             if (!site.isEmpty()) {
                 if (siteRepository.findByUrl(site) == null) {
+
                     return new ResponseEntity<>(new ResponseDto(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
                 } else {
-                    searchData = searchStarter.getSearchFromOneSite(query, site, offset, limit);
+                    searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
                 }
             } else {
-                searchData = searchStarter.getFullSearch(query, offset, limit);
+                searchData = searchStarter.getFullSearch(query, offset, 30);
             }
             return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
 
