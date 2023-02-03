@@ -45,7 +45,7 @@ public class SearchService {
             String title = clearHtmlCode(content, "title");
             String body = clearHtmlCode(content, "body");
             stringBuilder.append(title).append(body);
-            float absRel = pageList.get(page);
+            float value = pageList.get(page);
             List<Integer> lemmaIndex = new ArrayList<>();
             StringBuilder snippetBuilder = new StringBuilder();
             {
@@ -67,7 +67,7 @@ public class SearchService {
                 i++;
             }
 
-            searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), absRel));
+            searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), value));
         }
         return searchDtoList;
     }
