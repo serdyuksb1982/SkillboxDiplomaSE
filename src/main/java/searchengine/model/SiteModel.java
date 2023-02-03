@@ -52,7 +52,13 @@ public class SiteModel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "siteModelId", cascade = CascadeType.ALL)
     private List<LemmaModel> lemmaModelList = new ArrayList<>();
 
-    public SiteModel(Status status, Date statusTime, String lastError, String url, String name, List<PageModel> pageModelList, List<LemmaModel> lemmaModelList) {
+    public SiteModel(Status status,
+                     Date statusTime,
+                     String lastError,
+                     String url,
+                     String name,
+                     List<PageModel> pageModelList,
+                     List<LemmaModel> lemmaModelList) {
         this.status = status;
         this.statusTime = statusTime;
         this.lastError = lastError;

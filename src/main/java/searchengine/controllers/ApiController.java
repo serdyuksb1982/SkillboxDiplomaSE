@@ -14,10 +14,8 @@ import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
 import searchengine.search.SearchStarter;
-import searchengine.services.search.SearchService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
