@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import searchengine.dto.response.ResultDTO;
 import searchengine.dto.SearchDto;
-import searchengine.dto.statistics.ResponseDto;
 import searchengine.dto.statistics.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.repository.SiteRepository;
@@ -43,20 +43,21 @@ public class ApiController {
 
     @ApiOperation("Start parsing web")
     @GetMapping("/startIndexing")
-    public ResponseEntity<Object> startIndexing() {
-        return ResponseEntity.ok(indexingService.startIndexing());
+    public ResultDTO startIndexing() {
+        return indexingService.startIndexing();
     }
 
     @ApiOperation("Stop parsing web")
     @GetMapping("/stopIndexing")
-    public ResponseEntity<Object> stopIndexing() {
-        return ResponseEntity.ok(indexingService.stopIndexing());
+    public ResultDTO stopIndexing() {
+        log.info("ОСТАНОВКА ИНДЕКСАЦИИ");
+        return indexingService.stopIndexing();
     }
 
     @ApiOperation("Index pages")
     @PostMapping("/indexPage")
     public ResponseEntity<Object> indexPage(@RequestParam(name = "url") String url) {
-        if (url.isEmpty()) return new ResponseEntity<>( new ResponseDto(false, "Error"), HttpStatus.BAD_REQUEST);
+        if (url.isEmpty()) return new ResponseEntity<>( new ResultDTO(false, "Error"), HttpStatus.BAD_REQUEST);
          else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
     }
 
@@ -71,7 +72,7 @@ public class ApiController {
             if (!site.isEmpty()) {
                 if (siteRepository.findByUrl(site) == null) {
 
-                    return new ResponseEntity<>(new ResponseDto(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new ResultDTO(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
                 } else {
                     searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
                 }

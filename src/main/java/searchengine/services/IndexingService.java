@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
+import searchengine.dto.response.ResultDTO;
 import searchengine.model.SiteModel;
 import searchengine.model.enums.Status;
 import searchengine.repository.IndexRepository;
@@ -15,10 +16,14 @@ import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.site.SiteIndexed;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
+import static searchengine.model.enums.Status.INDEXED;
+import static searchengine.model.enums.Status.INDEXING;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +38,13 @@ public class IndexingService {
     private final WebParser webParser;
     private final SitesList config;
 
-    public boolean startIndexing() {
-        if (isIndexingActive()) {
+    public ResultDTO startIndexing() {
+        if (isIndexingActive() ) {
             log.debug("Indexing is already running.");
-            return false;
+            //new ResultDTO(false, "Индексация уже запущена").getError();
+            return new ResultDTO(false, "Индексация уже запущена ");
         } else {
+
             List<Site> siteList = config.getSites();
             executorService = Executors.
                     newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -58,31 +65,32 @@ public class IndexingService {
             }
             executorService.shutdown();
         }
-        return true;
+        return new ResultDTO(true);
     }
 
-    public boolean stopIndexing() {
-        if (isIndexingActive()) {
+    public ResultDTO stopIndexing() {
+        if (!isIndexingActive()) {
+
+            return new ResultDTO(false, "Индексация не запущена");
+        } else {
             log.info("Index stopping.");
             executorService.shutdownNow();
-            return true;
-        } else {
-            return false;
+            return new ResultDTO(true);
         }
     }
 
     private boolean isIndexingActive() {
         siteRepository.flush();
         Iterable<SiteModel> siteList = siteRepository.findAll();
-        Iterator<SiteModel> iterator = siteList.iterator();
-        while (iterator.hasNext()) {
-            SiteModel site = iterator.next();
-            if (site.getStatus() == Status.INDEXING) {
+        for (SiteModel site : siteList) {
+            if (site.getStatus() == INDEXING) {
                 return true;
             }
         }
         return false;
     }
+
+
 
     public boolean urlIndexing(String url) {
         if (isUrlSiteEquals(url)) {

@@ -14,7 +14,5 @@ public class SearchResponse {
     private int count;
     private List<SearchDto> data;
 
-    public SearchResponse(boolean result){
-        this.result = result;
-    }
+
 }
