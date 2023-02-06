@@ -41,8 +41,8 @@ public class IndexingService {
     public ResultDTO startIndexing() {
         if (isIndexingActive() ) {
             log.debug("Indexing is already running.");
-            //new ResultDTO(false, "Индексация уже запущена").getError();
-            return new ResultDTO(false, "Индексация уже запущена ");
+            new ResultDTO(false, "Индексация уже запущена").getError();
+            //return new ResultDTO(false, "Индексация уже запущена ");
         } else {
 
             List<Site> siteList = config.getSites();
@@ -74,7 +74,7 @@ public class IndexingService {
             return new ResultDTO(false, "Индексация не запущена");
         } else {
             log.info("Index stopping.");
-            executorService.shutdownNow();
+            executorService.shutdown();
             return new ResultDTO(true);
         }
     }
