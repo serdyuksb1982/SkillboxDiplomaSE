@@ -5,13 +5,11 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "lemma")
-@EqualsAndHashCode
 public class LemmaModel {
 
     /*id INT NOT NULL AUTO_INCREMENT;

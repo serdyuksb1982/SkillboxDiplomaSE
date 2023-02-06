@@ -17,6 +17,7 @@ import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -52,7 +53,11 @@ public class SearchService {
                 int i = 0;
                 while (i < textLemmaList.size()) {
                     String lemma = textLemmaList.get(i);
-                    lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
+                    try {
+                        lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     i++;
                 }
             }

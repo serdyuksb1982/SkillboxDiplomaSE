@@ -17,7 +17,7 @@ import java.util.*;
 public class LemmaEngine {
     private final LemmaConfiguration lemmaConfiguration;
 
-    public Map<String, Integer> getLemmaMap(String text) {
+    public Map<String, Integer> getLemmaMap(String text) throws RuntimeException {
 
         text = arrayContainsWords(text);
         Map<String, Integer> lemmaList = new HashMap<>();
@@ -37,7 +37,7 @@ public class LemmaEngine {
         return lemmaList;
     }
 
-    public List<String> getLemma(String word) throws Exception {
+    public List<String> getLemma(String word) throws IOException {
         List<String> lemmaList = new ArrayList<>();
         if (checkLanguage(word).equals("Russian")) {
             List<String> baseRusForm = lemmaConfiguration.russianLuceneMorphology().getNormalForms(word);
@@ -83,21 +83,19 @@ public class LemmaEngine {
                 .replaceAll("([^а-я\\s])", " ").trim();
     }
 
-    public Collection<Integer> findLemmaIndexInText(String content, String lemma) {
+    public Collection<Integer> findLemmaIndexInText(String content, String lemma) throws IOException {
         List<Integer> lemmaIndexList = new ArrayList<>();
         String[] elements = content.toLowerCase(Locale.ROOT).split("\\p{Punct}|\\s");
         int index = 0;
         for (String el : elements) {
-            try {
-                List<String> lemmas = getLemma(el);
-                for (String lem : lemmas) {
-                    if (lem.equals(lemma)) {
-                        lemmaIndexList.add(index);
-                    }
+
+            List<String> lemmas = getLemma(el);
+            for (String lem : lemmas) {
+                if (lem.equals(lemma)) {
+                    lemmaIndexList.add(index);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
+
             index += el.length() + 1;
         }
         return lemmaIndexList;

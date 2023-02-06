@@ -14,6 +14,7 @@ public class LemmaConfiguration {
     public LuceneMorphology russianLuceneMorphology() throws IOException {
         return new RussianLuceneMorphology();
     }
+
     @Bean
     public LuceneMorphology englishLuceneMorphology() throws IOException {
         return new EnglishLuceneMorphology();

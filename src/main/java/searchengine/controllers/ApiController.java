@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.response.ResultDTO;
 import searchengine.dto.SearchDto;
-import searchengine.dto.statistics.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
@@ -25,6 +24,7 @@ public class ApiController {
     private final IndexingService indexingService;
     private final SiteRepository siteRepository;
     private final SearchStarter searchStarter;
+
     public ApiController(StatisticsService statisticsService,
                          IndexingService indexingService,
                          SiteRepository siteRepository,
@@ -56,30 +56,30 @@ public class ApiController {
 
     @ApiOperation("Index pages")
     @PostMapping("/indexPage")
-    public ResponseEntity<Object> indexPage(@RequestParam(name = "url") String url) {
-        if (url.isEmpty()) return new ResponseEntity<>( new ResultDTO(false, "Error"), HttpStatus.BAD_REQUEST);
-         else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
+    public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
+        if (url.isEmpty()) return new ResponseEntity<>(new ResultDTO(false, "Error"), HttpStatus.BAD_REQUEST);
+        else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
     }
 
     @ApiOperation("Search in sites")
     @GetMapping("/search")
-    public ResponseEntity<Object> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
+    public ResponseEntity<ResultDTO> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                                          @RequestParam(name = "site", required = false, defaultValue = "") String site,
-                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset)
-    {
+                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
 
-            List<SearchDto> searchData;
-            if (!site.isEmpty()) {
-                if (siteRepository.findByUrl(site) == null) {
+        List<SearchDto> searchData;
+        if (!site.isEmpty()) {
+            if (siteRepository.findByUrl(site) == null) {
 
-                    return new ResponseEntity<>(new ResultDTO(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
-                } else {
-                    searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
-                }
+                return new ResponseEntity<>(new ResultDTO(false, "Данная страница находится за пределами сайтов,\n" +
+                        "указанных в конфигурационном файле"), HttpStatus.BAD_REQUEST);
             } else {
-                searchData = searchStarter.getFullSearch(query, offset, 30);
+                searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
             }
-            return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
+        } else {
+            searchData = searchStarter.getFullSearch(query, offset, 30);
+        }
+        return new ResponseEntity<>(new ResultDTO(true, searchData.size(), searchData), HttpStatus.OK);
 
     }
 }

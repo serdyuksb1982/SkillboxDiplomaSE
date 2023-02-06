@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
-import static searchengine.model.enums.Status.INDEXED;
 import static searchengine.model.enums.Status.INDEXING;
 
 @Service
@@ -39,10 +37,10 @@ public class IndexingService {
     private final SitesList config;
 
     public ResultDTO startIndexing() {
-        if (isIndexingActive() ) {
+        if (isIndexingActive()) {
             log.debug("Indexing is already running.");
             new ResultDTO(false, "Индексация уже запущена").getError();
-            //return new ResultDTO(false, "Индексация уже запущена ");
+
         } else {
 
             List<Site> siteList = config.getSites();
@@ -53,14 +51,14 @@ public class IndexingService {
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
                 log.info("Indexing web site ".concat(site.getName()));
-                executorService.submit(new SiteIndexed( pageRepository,
-                                                        siteRepository,
-                                                        lemmaRepository,
-                                                        indexRepository,
-                                                        lemmaIndexer,
-                                                        webParser,
-                                                        url,
-                                                        config)
+                executorService.submit(new SiteIndexed(pageRepository,
+                        siteRepository,
+                        lemmaRepository,
+                        indexRepository,
+                        lemmaIndexer,
+                        webParser,
+                        url,
+                        config)
                 );
             }
             executorService.shutdown();
@@ -70,7 +68,7 @@ public class IndexingService {
 
     public ResultDTO stopIndexing() {
         if (!isIndexingActive()) {
-
+            log.info("Site indexing is already running!");
             return new ResultDTO(false, "Индексация не запущена");
         } else {
             log.info("Index stopping.");
@@ -91,26 +89,26 @@ public class IndexingService {
     }
 
 
-
-    public boolean urlIndexing(String url) {
+    public ResultDTO urlIndexing(String url) {
         if (isUrlSiteEquals(url)) {
             log.info("Начата переиндексация сайта - " + url);
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            executorService.submit(new SiteIndexed( pageRepository,
-                                                    siteRepository,
-                                                    lemmaRepository,
-                                                    indexRepository,
-                                                    lemmaIndexer,
-                                                    webParser,
-                                                    url,
-                                                    config)
+            executorService.submit(new SiteIndexed(pageRepository,
+                    siteRepository,
+                    lemmaRepository,
+                    indexRepository,
+                    lemmaIndexer,
+                    webParser,
+                    url,
+                    config)
             );
             executorService.shutdown();
-            return true;
+            return new ResultDTO(true);
         } else {
-            return false;
+            return new ResultDTO(false, "\"Данная страница находится за пределами сайтов,\n" +
+                    "указанных в конфигурационном файле");
         }
-        
+
     }
 
     private boolean isUrlSiteEquals(String url) {

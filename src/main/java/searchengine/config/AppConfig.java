@@ -13,7 +13,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class AppConfig extends WebSecurityConfigurerAdapter {
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws  Exception {
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 
         var userDetailsService = new InMemoryUserDetailsManager();
 

@@ -38,6 +38,9 @@ public class SiteIndexed implements Runnable {
     private final String url;
     private final SitesList config;
 
+    /**
+     * This is method start indexing sites, and set in model...
+     */
     @Override
     public void run() {
         if (siteRepository.findByUrl(url) != null) {

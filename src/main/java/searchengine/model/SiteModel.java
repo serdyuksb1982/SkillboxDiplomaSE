@@ -12,7 +12,6 @@ import java.util.List;
 @Table(name = "site")
 @Getter
 @Setter
-@EqualsAndHashCode
 public class SiteModel {
 
     /*● id INT NOT NULL AUTO_INCREMENT;

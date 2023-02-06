@@ -23,6 +23,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
     private final SitesList config;
+
     public PageIndexer(String url,
                        List<PageDto> pageDtoList,
                        List<String> urlList,
@@ -54,7 +55,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             PageDto pageDto = new PageDto(url, html, status);
             pageDtoList.add(pageDto);
             Elements elements = doc.select("body")
-                                    .select("a");
+                    .select("a");
             List<PageIndexer> taskList = new ArrayList<>();
             for (Element el : elements) {
                 String link = el.attr("abs:href");
