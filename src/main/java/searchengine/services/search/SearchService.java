@@ -84,7 +84,7 @@ public class SearchService {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
             int next = i + 1;
-            while (!(!(next < lemmaIndex.size()) || !(lemmaIndex.get(next) - end > 0) || !(lemmaIndex.get(next) - end < 5))) {
+            while (!(next >= lemmaIndex.size() || !(0 < lemmaIndex.get(next) - end) || lemmaIndex.get(next) - end >= 5)) {
                 end = content.indexOf(" ", lemmaIndex.get(next));
                 next += 1;
             }
