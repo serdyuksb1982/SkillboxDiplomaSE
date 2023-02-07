@@ -113,12 +113,7 @@ public class IndexingService {
 
     private boolean isUrlSiteEquals(String url) {
         List<Site> urlList = config.getSites();
-        for (Site site : urlList) {
-            if (site.getUrl().equals(url)) {
-                return true;
-            }
-        }
-        return false;
+        return urlList.stream().anyMatch(site -> site.getUrl().equals(url));
     }
 
 
