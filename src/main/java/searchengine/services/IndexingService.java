@@ -88,10 +88,10 @@ public class IndexingService {
     }
 
 
-    public boolean indexPage(String url) {
+    public boolean indexPage(String urlPage) {
 
-        if (isUrlSiteEquals(url)) {
-            log.info("Начата переиндексация сайта - " + url);
+        if (isUrlSiteEquals(urlPage)) {
+            log.info("Начата переиндексация сайта - " + urlPage);
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
             executorService.submit(new SiteIndexed(pageRepository,
                     siteRepository,
@@ -99,7 +99,7 @@ public class IndexingService {
                     indexRepository,
                     lemmaIndexer,
                     webParser,
-                    url,
+                    urlPage,
                     config));
             executorService.shutdown();
             return true;

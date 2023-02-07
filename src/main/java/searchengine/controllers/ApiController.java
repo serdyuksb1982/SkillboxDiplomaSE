@@ -1,14 +1,10 @@
 package searchengine.controllers;
 
-
 import io.swagger.annotations.ApiOperation;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import searchengine.config.Site;
-import searchengine.config.SitesList;
 import searchengine.dto.response.ResultDTO;
 import searchengine.dto.SearchDto;
 import searchengine.dto.statistics.StatisticsResponse;
@@ -17,7 +13,6 @@ import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
 import searchengine.search.SearchStarter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -59,7 +54,7 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    @Operation(summary = "Индексация отдельной страницы")
+    @ApiOperation("Индексация отдельной страницы")
     public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
         if (url.isEmpty()) {
             log.info("Страница не указана");
@@ -80,8 +75,8 @@ public class ApiController {
     @ApiOperation("Search in sites")
     @GetMapping("/search")
     public ResponseEntity<ResultDTO> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
-                                         @RequestParam(name = "site", required = false, defaultValue = "") String site,
-                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
+                                            @RequestParam(name = "site", required = false, defaultValue = "") String site,
+                                            @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
 
         List<SearchDto> searchData;
         if (!site.isEmpty()) {
