@@ -2,10 +2,13 @@ package searchengine.controllers;
 
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import searchengine.config.Site;
+import searchengine.config.SitesList;
 import searchengine.dto.response.ResultDTO;
 import searchengine.dto.SearchDto;
 import searchengine.dto.statistics.StatisticsResponse;
@@ -14,6 +17,7 @@ import searchengine.services.IndexingService;
 import searchengine.services.StatisticsService;
 import searchengine.search.SearchStarter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -57,9 +61,18 @@ public class ApiController {
     @ApiOperation("Index pages")
     @PostMapping("/indexPage")
     public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
-        if (url.isEmpty()) return new ResponseEntity<>(new ResultDTO(false, "Error"), HttpStatus.BAD_REQUEST);
-        else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
+        System.out.println("1");
+        if (url.isEmpty()) return new ResponseEntity<>(new ResultDTO(false, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
+        else if (indexingService.urlIndexing(url) == true){
+            System.out.println("2");
+            return new ResponseEntity<>(new ResultDTO(true), HttpStatus.OK);
+        } else {
+            log.info("Указанная страница" + "за пределами конфигурационного файла");
+            return new ResponseEntity<>(new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла"), HttpStatus.BAD_REQUEST);
+        }
     }
+
+
 
     @ApiOperation("Search in sites")
     @GetMapping("/search")

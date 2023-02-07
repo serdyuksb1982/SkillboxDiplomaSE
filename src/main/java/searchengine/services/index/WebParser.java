@@ -48,12 +48,12 @@ public class WebParser {
                 Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
-                    Long lemmaId = lemma.getId();
+                    long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
-                        float totalRank = 0.0F;
+                        float totalRank = 0.0f;
                         if (titleList.get(keyWord) != null) {
-                            float titleRank = Float.valueOf(titleList.get(keyWord));
+                            float titleRank = titleList.get(keyWord);
                             totalRank += titleRank;
                         }
                         if (bodyList.get(keyWord) != null) {

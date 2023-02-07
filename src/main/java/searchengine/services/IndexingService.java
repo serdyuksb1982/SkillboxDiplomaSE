@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.response.ResultDTO;
+import searchengine.model.IndexModel;
+import searchengine.model.LemmaModel;
+import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
-import searchengine.model.enums.Status;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
 import searchengine.repository.PageRepository;
@@ -16,7 +18,6 @@ import searchengine.services.index.WebParser;
 import searchengine.services.lemma.LemmaIndexer;
 import searchengine.services.site.SiteIndexed;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,9 +59,7 @@ public class IndexingService {
                         lemmaIndexer,
                         webParser,
                         url,
-                        config)
-                );
-            }
+                        config));}
             executorService.shutdown();
         }
         return new ResultDTO(true);
@@ -89,7 +88,8 @@ public class IndexingService {
     }
 
 
-    public ResultDTO urlIndexing(String url) {
+    public boolean urlIndexing(String url) {
+
         if (isUrlSiteEquals(url)) {
             log.info("Начата переиндексация сайта - " + url);
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -100,20 +100,26 @@ public class IndexingService {
                     lemmaIndexer,
                     webParser,
                     url,
-                    config)
-            );
+                    config));
             executorService.shutdown();
-            return new ResultDTO(true);
+            return true;
         } else {
-            return new ResultDTO(false, "\"Данная страница находится за пределами сайтов,\n" +
-                    "указанных в конфигурационном файле");
+            return false;
         }
 
     }
 
+
+
     private boolean isUrlSiteEquals(String url) {
         List<Site> urlList = config.getSites();
-        return urlList.stream().anyMatch(site -> site.getUrl().equals(url));
+        for (Site site : urlList) {
+            if (site.getUrl().equals(url)) {
+                return true;
+            }
+        }
+        return false;
     }
+
 
 }

@@ -1,6 +1,5 @@
 package searchengine.dto.statistics;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Data
