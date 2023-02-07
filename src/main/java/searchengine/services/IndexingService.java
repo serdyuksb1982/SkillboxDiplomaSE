@@ -88,7 +88,7 @@ public class IndexingService {
     }
 
 
-    public boolean urlIndexing(String url) {
+    public boolean indexPage(String url) {
 
         if (isUrlSiteEquals(url)) {
             log.info("Начата переиндексация сайта - " + url);

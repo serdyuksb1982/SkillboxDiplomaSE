@@ -58,17 +58,20 @@ public class ApiController {
         return indexingService.stopIndexing();
     }
 
-    @ApiOperation("Index pages")
     @PostMapping("/indexPage")
+    @Operation(summary = "Индексация отдельной страницы")
     public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
-        System.out.println("1");
-        if (url.isEmpty()) return new ResponseEntity<>(new ResultDTO(false, "BAD_REQUEST"), HttpStatus.BAD_REQUEST);
-        else if (indexingService.urlIndexing(url) == true){
-            System.out.println("2");
-            return new ResponseEntity<>(new ResultDTO(true), HttpStatus.OK);
+        if (url.isEmpty()) {
+            log.info("Страница не указана");
+            return new ResponseEntity<>(new ResultDTO(false, "Страница не указана"), HttpStatus.BAD_REQUEST);
         } else {
-            log.info("Указанная страница" + "за пределами конфигурационного файла");
-            return new ResponseEntity<>(new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла"), HttpStatus.BAD_REQUEST);
+            if (indexingService.indexPage(url) == true) {
+                log.info("Страница - " + url + " - добавлена на переиндексацию");
+                return new ResponseEntity<>(new ResultDTO(true), HttpStatus.OK);
+            } else {
+                log.info("Указанная страница" + "за пределами конфигурационного файла");
+                return new ResponseEntity<>(new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла"), HttpStatus.BAD_REQUEST);
+            }
         }
     }
 
