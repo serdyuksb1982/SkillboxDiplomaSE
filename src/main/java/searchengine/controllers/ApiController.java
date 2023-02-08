@@ -53,9 +53,9 @@ public class ApiController {
         return indexingService.stopIndexing();
     }
 
-    @PostMapping("/indexPage")
     @ApiOperation("Индексация отдельной страницы")
-    public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
+    @PostMapping("/indexPage")
+    public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url", required = false, defaultValue = "") String url) {
         if (url.isEmpty()) {
             log.info("Страница не указана");
             return new ResponseEntity<>(new ResultDTO(false, "Страница не указана"), HttpStatus.BAD_REQUEST);
@@ -64,7 +64,7 @@ public class ApiController {
                 log.info("Страница - " + url + " - добавлена на переиндексацию");
                 return new ResponseEntity<>(new ResultDTO(true), HttpStatus.OK);
             } else {
-                log.info("Указанная страница" + "за пределами конфигурационного файла");
+                log.info("Указанная страница " + "за пределами конфигурационного файла");
                 return new ResponseEntity<>(new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла"), HttpStatus.BAD_REQUEST);
             }
         }
