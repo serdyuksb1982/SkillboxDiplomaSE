@@ -1,14 +1,12 @@
 package searchengine.controllers;
 
-
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import searchengine.dto.response.ResultDTO;
 import searchengine.dto.SearchDto;
-import searchengine.dto.statistics.ResponseDto;
-import searchengine.dto.statistics.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.repository.SiteRepository;
 import searchengine.services.IndexingService;
@@ -25,6 +23,7 @@ public class ApiController {
     private final IndexingService indexingService;
     private final SiteRepository siteRepository;
     private final SearchStarter searchStarter;
+
     public ApiController(StatisticsService statisticsService,
                          IndexingService indexingService,
                          SiteRepository siteRepository,
@@ -43,42 +42,55 @@ public class ApiController {
 
     @ApiOperation("Start parsing web")
     @GetMapping("/startIndexing")
-    public ResponseEntity<Object> startIndexing() {
-        return ResponseEntity.ok(indexingService.startIndexing());
+    public ResultDTO startIndexing() {
+        return indexingService.startIndexing();
     }
 
     @ApiOperation("Stop parsing web")
     @GetMapping("/stopIndexing")
-    public ResponseEntity<Object> stopIndexing() {
-        return ResponseEntity.ok(indexingService.stopIndexing());
+    public ResultDTO stopIndexing() {
+        log.info("ОСТАНОВКА ИНДЕКСАЦИИ");
+        return indexingService.stopIndexing();
     }
 
-    @ApiOperation("Index pages")
     @PostMapping("/indexPage")
-    public ResponseEntity<Object> indexPage(@RequestParam(name = "url") String url) {
-        if (url.isEmpty()) return new ResponseEntity<>( new ResponseDto(false, "Error"), HttpStatus.BAD_REQUEST);
-         else return new ResponseEntity<>(indexingService.urlIndexing(url), HttpStatus.OK);
+    @ApiOperation("Индексация отдельной страницы")
+    public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url") String url) {
+        if (url.isEmpty()) {
+            log.info("Страница не указана");
+            return new ResponseEntity<>(new ResultDTO(false, "Страница не указана"), HttpStatus.BAD_REQUEST);
+        } else {
+            if (indexingService.indexPage(url) == true) {
+                log.info("Страница - " + url + " - добавлена на переиндексацию");
+                return new ResponseEntity<>(new ResultDTO(true), HttpStatus.OK);
+            } else {
+                log.info("Указанная страница" + "за пределами конфигурационного файла");
+                return new ResponseEntity<>(new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла"), HttpStatus.BAD_REQUEST);
+            }
+        }
     }
+
+
 
     @ApiOperation("Search in sites")
     @GetMapping("/search")
-    public ResponseEntity<Object> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
-                                         @RequestParam(name = "site", required = false, defaultValue = "") String site,
-                                         @RequestParam(name = "offset", required = false, defaultValue = "0") int offset)
-    {
+    public ResponseEntity<ResultDTO> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
+                                            @RequestParam(name = "site", required = false, defaultValue = "") String site,
+                                            @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
 
-            List<SearchDto> searchData;
-            if (!site.isEmpty()) {
-                if (siteRepository.findByUrl(site) == null) {
+        List<SearchDto> searchData;
+        if (!site.isEmpty()) {
+            if (siteRepository.findByUrl(site) == null) {
 
-                    return new ResponseEntity<>(new ResponseDto(false, "Указанная страница не найдена"), HttpStatus.BAD_REQUEST);
-                } else {
-                    searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
-                }
+                return new ResponseEntity<>(new ResultDTO(false, "Данная страница находится за пределами сайтов,\n" +
+                        "указанных в конфигурационном файле"), HttpStatus.BAD_REQUEST);
             } else {
-                searchData = searchStarter.getFullSearch(query, offset, 30);
+                searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
             }
-            return new ResponseEntity<>(new SearchResponse(true, searchData.size(), searchData), HttpStatus.OK);
+        } else {
+            searchData = searchStarter.getFullSearch(query, offset, 30);
+        }
+        return new ResponseEntity<>(new ResultDTO(true, searchData.size(), searchData), HttpStatus.OK);
 
     }
 }

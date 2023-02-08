@@ -1,10 +1,12 @@
-<h1 align="center">Search Engine "SkillBox"</h1>
 
+# <h1 align="center">Search Engine "SkillBox"</h1>
+
+## This is my graduation project of the JAVA developer course from SkillBox
 ***
 
 📄<b>_Stack_</b>:
-Java version 17, Spring Boot version 2.5.7, maven, Hibernate, migratiom FlyWay Db, Swagger Api, Lombok,JSOUP,
-DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4".
+_Java version 17, Spring Boot version 2.5.7, maven, Hibernate, migratiom FlyWay Db, Swagger Api, Lombok,JSOUP,
+DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4"._
 
 ***
 

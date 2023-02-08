@@ -21,6 +21,7 @@ import searchengine.repository.PageRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class WebParser {
     private final LemmaRepository lemmaRepository;
     private final LemmaEngine lemmaEngine;
     private List<IndexDto> config;
-    
+
     public void startWebParser(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
@@ -47,12 +48,12 @@ public class WebParser {
                 Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
-                    Long lemmaId = lemma.getId();
+                    long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
-                        float totalRank = 0.0F;
+                        float totalRank = 0.0f;
                         if (titleList.get(keyWord) != null) {
-                            float titleRank = Float.valueOf(titleList.get(keyWord));
+                            float titleRank = titleList.get(keyWord);
                             totalRank += titleRank;
                         }
                         if (bodyList.get(keyWord) != null) {
@@ -70,13 +71,11 @@ public class WebParser {
         }
     }
 
-    public  String clearCodeFromTag(String content, String s) {
-        StringBuilder stringBuilder = new StringBuilder();
+    public String clearCodeFromTag(String content, String s) {
+        String stringBuilder;
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(s);
-        for (Element el : elements) {
-            stringBuilder.append(el.html());
-        }
-        return Jsoup.parse(stringBuilder.toString()).text();
+        stringBuilder = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(stringBuilder).text();
     }
 }

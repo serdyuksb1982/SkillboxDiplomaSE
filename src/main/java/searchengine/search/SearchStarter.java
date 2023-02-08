@@ -20,9 +20,9 @@ public class SearchStarter {
     private final SearchService searchService;
 
     public List<SearchDto> getSearchFromOneSite(String text,
-                                      String url,
-                                      int start,
-                                      int limit) {
+                                                String url,
+                                                int start,
+                                                int limit) {
         SiteModel site = siteRepository.findByUrl(url);
         List<String> textLemmaList = searchService.getLemmaFromSearchText(text);
         List<LemmaModel> foundLemmaList = searchService.getLemmaModelFromSite(textLemmaList, site);
@@ -30,8 +30,8 @@ public class SearchStarter {
     }
 
     public List<SearchDto> getFullSearch(String text,
-                                          int start,
-                                          int limit) {
+                                         int start,
+                                         int limit) {
         List<SiteModel> siteList = siteRepository.findAll();
         List<SearchDto> result = new ArrayList<>();
         List<LemmaModel> foundLemmaList = new ArrayList<>();

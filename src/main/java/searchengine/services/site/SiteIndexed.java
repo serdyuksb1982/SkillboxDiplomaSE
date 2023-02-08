@@ -22,6 +22,7 @@ import searchengine.services.pageconvertor.PageIndexer;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
@@ -38,6 +39,9 @@ public class SiteIndexed implements Runnable {
     private final String url;
     private final SitesList config;
 
+    /**
+     * This is method start indexing sites, and set in model...
+     */
     @Override
     public void run() {
         if (siteRepository.findByUrl(url) != null) {

@@ -15,6 +15,7 @@ import searchengine.repository.PageRepository;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -51,13 +52,10 @@ public class LemmaIndexer {
     }
 
     public String clearHtml(String content, String tag) {
-        StringBuilder html = new StringBuilder();
+        String html;
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(tag);
-        for (int i = 0; i < elements.size(); i++) {
-            Element el = elements.get(i);
-            html.append(el.html());
-        }
-        return Jsoup.parse(html.toString()).text();
+        html = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(html).text();
     }
 }

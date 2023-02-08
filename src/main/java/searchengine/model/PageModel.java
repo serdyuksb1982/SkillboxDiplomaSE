@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "page")
-@EqualsAndHashCode
 public class PageModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
