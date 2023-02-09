@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  app:
+    image: serdyuk/skillboxdiplom
+    container_name: search-engine
+    ports:
+      - '8080:8080'
+    networks:
+      - springmysql-net
+    depends_on:
+      - mysqldb
+  mysqldb:
+    image: mysql:8.0.30
+    container_name: mysql
+    expose:
+      - '3308'
+    networks:
+      - springmysql-net
+    ports:
+      - '3308:3308'
+    volumes:
+      - 'D:/docker-db-volume:/var/lib/mysql'
+networks:
+  springmysql-net:
+    driver: bridge
