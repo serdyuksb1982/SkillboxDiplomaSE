@@ -30,7 +30,7 @@ DB MySQL8O, Morphology Library, create schema -> "charset/Collation: utf8mb4"._
  indexing-settings:
    sites:
      - url: https://www.playback.ru
-       #name: PlayBack.Ru
+       name: PlayBack.Ru
      - url: https://www.lenta.ru
        name: Лента.ру
      - url: https://www.skillbox.ru
