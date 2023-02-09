@@ -23,10 +23,12 @@ public class SecurityConfiguration {
     public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder encoder) {
        UserDetails admin = User
                .withUsername("admin")
-               .password(encoder.encode("admin")).roles("admin").build();
+               .password(encoder.encode("admin"))
+               .roles("admin", "user").build();
         UserDetails user = User
                 .withUsername("user")
-                .password(encoder.encode("user")).roles("user").build();
+                .password(encoder.encode("user"))
+                .roles("user").build();
        return new InMemoryUserDetailsManager(admin, user);
     }
 
@@ -34,6 +36,7 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return getInstance();
     }
+
     /** filter springSecurityFilterChain make work SS in Web part API**/
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -46,7 +49,5 @@ public class SecurityConfiguration {
                  /**Отключение SS csrf токкена!**/
                  .csrf().disable()
                  .build();
-
     }
-
 }

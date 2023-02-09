@@ -7,6 +7,7 @@ import searchengine.config.SitesList;
 import searchengine.dto.IndexDto;
 import searchengine.dto.LemmaDto;
 import searchengine.dto.PageDto;
+import searchengine.exception.CurrentRuntimeException;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
 import searchengine.model.PageModel;
@@ -100,7 +101,7 @@ public class SiteIndexed implements Runnable {
                 lemmaRepository.flush();
                 lemmaRepository.saveAll(lemmaList);
             } else {
-                throw new RuntimeException();
+                throw new CurrentRuntimeException("Invalid lemmas writer!");
             }
 
             if (!Thread.interrupted()) {

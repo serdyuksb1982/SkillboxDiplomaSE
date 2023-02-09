@@ -19,6 +19,7 @@ import searchengine.repository.PageRepository;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,7 @@ public class SearchService {
     private List<String> getWordsFromSiteContent(String content, List<Integer> lemmaIndex) {
         List<String> result = new ArrayList<>();
         int i = 0;
-        while ( i < lemmaIndex.size()) {
+        while (i < lemmaIndex.size()) {
             int start = lemmaIndex.get(i);
             int end = content.indexOf(" ", start);
             int next = i + 1;
@@ -95,7 +96,7 @@ public class SearchService {
             if (content.lastIndexOf(" ", start) != -1) {
                 startIndex = content.lastIndexOf(" ", start);
             } else startIndex = start;
-            if (content.indexOf(" ", end  + lemmaIndex.size() / 10) != -1) {
+            if (content.indexOf(" ", end + lemmaIndex.size() / 10) != -1) {
                 nextIndex = content.indexOf(" ", end + lemmaIndex.size() / 10);
             } else nextIndex = content.indexOf(" ", end);
             String text = content.substring(startIndex, nextIndex).replaceAll(word, "<b>".concat(word).concat("</b>"));
@@ -127,26 +128,18 @@ public class SearchService {
             }
         }
         Map<PageModel, Float> allRelevanceMap = new HashMap<>();
-        {
-            Iterator<PageModel> iterator = relevanceMap.keySet().iterator();
-            while (iterator.hasNext()) {
-                PageModel page = iterator.next();
-                float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
-                allRelevanceMap.put(page, relevance);
-            }
-        }
-        List<Map.Entry<PageModel, Float>> sortList = new ArrayList<>();
-        Iterator<Map.Entry<PageModel, Float>> iterator = allRelevanceMap
-                .entrySet().iterator();
-        while (iterator.hasNext()) {
-        Map.Entry<PageModel, Float> map = iterator.next();
-        sortList.add(map);
-}
+
+        relevanceMap.keySet().forEach(page -> {
+            float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
+            allRelevanceMap.put(page, relevance);
+        });
+
+        List<Map.Entry<PageModel, Float>> sortList = new ArrayList<>(allRelevanceMap.entrySet());
         sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         Map<PageModel, Float> map = new ConcurrentHashMap<>();
         int i = 0;
         while (i < sortList.size()) {
-            Map.Entry<PageModel, Float> pageModelFloatEntry = sortList.get(i);
+            Entry<PageModel, Float> pageModelFloatEntry = sortList.get(i);
             map.putIfAbsent(pageModelFloatEntry.getKey(), pageModelFloatEntry.getValue());
             i++;
         }
@@ -170,7 +163,7 @@ public class SearchService {
             try {
                 List<String> list = lemmaEngine.getLemma(lemma);
                 lemmaList.addAll(list);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.getMessage();
             }
             i++;

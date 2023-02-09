@@ -10,6 +10,7 @@ import searchengine.config.SitesList;
 import searchengine.dto.PageDto;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +46,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
                         .userAgent(config.getUserAgent())
                         .referrer(config.getReferrer())
                         .get();
-            } catch (Exception e) {
+            } catch (IOException | InterruptedException e) {
                 e.getMessage();
             }
             assert doc != null;
@@ -72,7 +73,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
                 }
             }
             taskList.forEach(ForkJoinTask::join);
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log.debug("Error parsing from ".concat(url));
             PageDto pageDto = new PageDto(url, "", 500);
             pageDtoList.add(pageDto);
@@ -81,10 +82,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
     }
 
     private boolean isSiteElementsType(String pathPage) {
-        List<String> WRONG_TYPES = Arrays.asList(
-                "JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip");
+        List<String> WRONG_TYPES = Arrays.asList("JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip");
         return !WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
     }
-
-
 }
