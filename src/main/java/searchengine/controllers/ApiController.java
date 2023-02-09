@@ -53,7 +53,7 @@ public class ApiController {
         return indexingService.stopIndexing();
     }
 
-    @ApiOperation("Индексация отдельной страницы")
+    @ApiOperation("Indexing a single page")
     @PostMapping("/indexPage")
     public ResponseEntity<ResultDTO> indexPage(@RequestParam(name = "url", required = false, defaultValue = "") String url) {
         if (url.isEmpty()) {
@@ -69,8 +69,6 @@ public class ApiController {
             }
         }
     }
-
-
 
     @ApiOperation("Search in sites")
     @GetMapping("/search")
@@ -91,6 +89,5 @@ public class ApiController {
             searchData = searchStarter.getFullSearch(query, offset, 30);
         }
         return new ResponseEntity<>(new ResultDTO(true, searchData.size(), searchData), HttpStatus.OK);
-
     }
 }

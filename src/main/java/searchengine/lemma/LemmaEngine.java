@@ -6,6 +6,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import searchengine.config.LemmaConfiguration;
+import searchengine.exception.CurrentRuntimeException;
 
 import java.io.IOException;
 import java.util.*;
@@ -27,7 +28,7 @@ public class LemmaEngine {
             try {
                 wordsList = getLemma(el);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new CurrentRuntimeException(e.getMessage());
             }
             for (String word : wordsList) {
                 int count = lemmaList.getOrDefault(word, 0);
@@ -52,12 +53,7 @@ public class LemmaEngine {
     private boolean isCorrectWordForm(String word) throws IOException {
         List<String> morphForm = lemmaConfiguration.russianLuceneMorphology().getMorphInfo(word);
         for (String l : morphForm) {
-            if (l.contains("ПРЕДЛ")
-                    || l.contains("СОЮЗ")
-                    || l.contains("МЕЖД")
-                    || l.contains("ВВОДН")
-                    || l.contains("ЧАСТ")
-                    || l.length() <= 3) {
+            if (l.contains("ПРЕДЛ") || l.contains("СОЮЗ") || l.contains("МЕЖД") || l.contains("ВВОДН") || l.contains("ЧАСТ") || l.length() <= 3) {
                 return true;
             }
         }

@@ -9,7 +9,6 @@ import searchengine.repository.SiteRepository;
 import searchengine.services.search.SearchService;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -48,14 +47,9 @@ public class SearchStarter {
         for (LemmaModel l : foundLemmaList) {
             if (l.getLemma().equals(text)) {
                 searchData = (searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
-                searchData.sort(new Comparator<SearchDto>() {
-                    @Override
-                    public int compare(SearchDto o1, SearchDto o2) {
-                        return Float.compare(o2.getRelevance(), o1.getRelevance());
-                    }
-                });
+                searchData.sort((o1, o2) -> Float.compare(o2.getRelevance(), o1.getRelevance()));
                 if (searchData.size() > limit) {
-                    int i = start;
+                    var i = start;
                     while (i < limit) {
                         result.add(searchData.get(i));
                         i++;
