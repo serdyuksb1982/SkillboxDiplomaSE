@@ -8,6 +8,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import searchengine.dto.SearchDto;
+import searchengine.exception.CurrentIOException;
+import searchengine.exception.CurrentRuntimeException;
 import searchengine.lemma.LemmaEngine;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
@@ -35,9 +37,7 @@ public class SearchService {
     private List<SearchDto> getSearchDtoList(ConcurrentHashMap<PageModel, Float> pageList,
                                              List<String> textLemmaList) {
         List<SearchDto> searchDtoList = new ArrayList<>();
-        Iterator<PageModel> iterator = pageList.keySet().iterator();
-        while (iterator.hasNext()) {
-            PageModel page = iterator.next();
+        for (PageModel page : pageList.keySet()) {
             String uri = page.getPath();
             String content = page.getContent();
             SiteModel pageSite = page.getSiteId();
@@ -50,27 +50,25 @@ public class SearchService {
             float value = pageList.get(page);
             List<Integer> lemmaIndex = new ArrayList<>();
             StringBuilder snippetBuilder = new StringBuilder();
-            {
-                int i = 0;
-                while (i < textLemmaList.size()) {
-                    String lemma = textLemmaList.get(i);
-                    try {
-                        lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    i++;
+            int i = 0;
+            while (i < textLemmaList.size()) {
+                String lemma = textLemmaList.get(i);
+                try {
+                    lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
+                } catch (IOException e) {
+                    new CurrentIOException(e.getMessage());
                 }
+                i++;
             }
             Collections.sort(lemmaIndex);
             List<String> wordList = getWordsFromSiteContent(stringBuilder.toString(), lemmaIndex);
-            int i = 0;
-            while (i < wordList.size()) {
-                snippetBuilder.append(wordList.get(i)).append(".");
-                if (i > 3) {
+            int y = 0;
+            while (y < wordList.size()) {
+                snippetBuilder.append(wordList.get(y)).append(".");
+                if (y > 3) {
                     break;
                 }
-                i++;
+                y++;
             }
 
             searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), value));
@@ -110,38 +108,38 @@ public class SearchService {
     private Map<PageModel, Float> getRelevanceFromPage(List<PageModel> pageList,
                                                       List<IndexModel> indexList) {
         Map<PageModel, Float> relevanceMap = new HashMap<>();
-        {
-            int i = 0;
-            while (i < pageList.size()) {
-                PageModel page = pageList.get(i);
-                float relevance = 0;
-                int j = 0;
-                while (j < indexList.size()) {
-                    IndexModel index = indexList.get(j);
-                    if (index.getPage() == page) {
-                        relevance += index.getRank();
-                    }
-                    j++;
+
+        int i = 0;
+        while (i < pageList.size()) {
+            PageModel page = pageList.get(i);
+            float relevance = 0;
+            int j = 0;
+            while (j < indexList.size()) {
+                IndexModel index = indexList.get(j);
+                if (index.getPage() == page) {
+                    relevance += index.getRank();
                 }
-                relevanceMap.put(page, relevance);
-                i++;
+                j++;
             }
+            relevanceMap.put(page, relevance);
+            i++;
         }
+
         Map<PageModel, Float> allRelevanceMap = new HashMap<>();
 
-        relevanceMap.keySet().forEach(page -> {
+        for (PageModel page : relevanceMap.keySet()) {
             float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
             allRelevanceMap.put(page, relevance);
-        });
+        }
 
         List<Map.Entry<PageModel, Float>> sortList = new ArrayList<>(allRelevanceMap.entrySet());
         sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         Map<PageModel, Float> map = new ConcurrentHashMap<>();
-        int i = 0;
-        while (i < sortList.size()) {
-            Entry<PageModel, Float> pageModelFloatEntry = sortList.get(i);
+        int y = 0;
+        while (y < sortList.size()) {
+            Entry<PageModel, Float> pageModelFloatEntry = sortList.get(y);
             map.putIfAbsent(pageModelFloatEntry.getKey(), pageModelFloatEntry.getValue());
-            i++;
+            y++;
         }
         return map;
     }
@@ -164,7 +162,7 @@ public class SearchService {
                 List<String> list = lemmaEngine.getLemma(lemma);
                 lemmaList.addAll(list);
             } catch (IOException e) {
-                e.getMessage();
+                new CurrentIOException(e.getMessage());
             }
             i++;
         }

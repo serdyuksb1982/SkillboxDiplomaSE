@@ -7,6 +7,7 @@ import searchengine.config.SitesList;
 import searchengine.dto.IndexDto;
 import searchengine.dto.LemmaDto;
 import searchengine.dto.PageDto;
+import searchengine.exception.CurrentInterruptedException;
 import searchengine.exception.CurrentRuntimeException;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
@@ -73,7 +74,7 @@ public class SiteIndexed implements Runnable {
                     ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
                     List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls, pageDtosList, urlList, config));
                     pageDtoList = new  CopyOnWriteArrayList<>(pages);
-                } else throw new InterruptedException();
+                } else throw new CurrentInterruptedException("Fork join exception.");
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
 
                 for (PageDto page : pageDtoList) {
@@ -85,7 +86,7 @@ public class SiteIndexed implements Runnable {
                 pageRepository.flush();
                 pageRepository.saveAll(pageList);
             } else {
-                throw new InterruptedException();
+                throw new CurrentInterruptedException("Local interrupted exception.");
             }
 
             if (!Thread.interrupted()) {
@@ -101,7 +102,7 @@ public class SiteIndexed implements Runnable {
                 lemmaRepository.flush();
                 lemmaRepository.saveAll(lemmaList);
             } else {
-                throw new CurrentRuntimeException("Invalid lemmas writer!");
+                throw new CurrentInterruptedException("Invalid lemmas writer!");
             }
 
             if (!Thread.interrupted()) {
@@ -122,7 +123,7 @@ public class SiteIndexed implements Runnable {
                 siteRepository.save(site);
 
             } else {
-                throw new InterruptedException();
+                throw new CurrentInterruptedException("Current site indexing exception");
             }
 
         } catch (InterruptedException e) {
@@ -132,6 +133,7 @@ public class SiteIndexed implements Runnable {
             sites.setStatus(Status.FAILED);
             sites.setStatusTime(new Date());
             siteRepository.save(site);
+            new CurrentInterruptedException("Interrupted exception");
         }
     }
 

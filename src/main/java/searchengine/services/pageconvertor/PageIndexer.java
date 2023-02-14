@@ -8,6 +8,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import searchengine.config.SitesList;
 import searchengine.dto.PageDto;
+import searchengine.exception.CurrentIOException;
+import searchengine.exception.CurrentInterruptedException;
 
 
 import java.io.IOException;
@@ -46,8 +48,10 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
                         .userAgent(config.getUserAgent())
                         .referrer(config.getReferrer())
                         .get();
-            } catch (IOException | InterruptedException e) {
-                e.getMessage();
+            } catch (IOException e) {
+                new CurrentIOException(e.getMessage());
+            } catch (InterruptedException e) {
+                new CurrentInterruptedException(e.getMessage());
             }
             assert doc != null;
             String html = doc.outerHtml();
@@ -77,6 +81,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             log.debug("Error parsing from ".concat(url));
             PageDto pageDto = new PageDto(url, "", 500);
             pageDtoList.add(pageDto);
+            new CurrentInterruptedException(e.getMessage());
         }
         return pageDtoList;
     }

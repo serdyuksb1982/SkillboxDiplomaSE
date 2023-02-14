@@ -35,24 +35,24 @@ public class SearchStarter {
         List<SearchDto> result = new ArrayList<>();
         List<LemmaModel> foundLemmaList = new ArrayList<>();
         List<String> textLemmaList = searchService.getLemmaFromSearchText(text);
-        {
-            int i = 0;
-            while (i < siteList.size()) {
-                SiteModel site = siteList.get(i);
-                foundLemmaList.addAll(searchService.getLemmaModelFromSite(textLemmaList, site));
-                i++;
-            }
+
+        int i = 0;
+        while (i < siteList.size()) {
+            SiteModel site = siteList.get(i);
+            foundLemmaList.addAll(searchService.getLemmaModelFromSite(textLemmaList, site));
+            i++;
         }
+
         List<SearchDto> searchData = new ArrayList<>();
         for (LemmaModel l : foundLemmaList) {
             if (l.getLemma().equals(text)) {
                 searchData = (searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
                 searchData.sort((o1, o2) -> Float.compare(o2.relevance(), o1.relevance()));
                 if (searchData.size() > limit) {
-                    var i = start;
-                    while (i < limit) {
-                        result.add(searchData.get(i));
-                        i++;
+                    var y = start;
+                    while (y < limit) {
+                        result.add(searchData.get(y));
+                        y++;
                     }
                     return result;
                 }
