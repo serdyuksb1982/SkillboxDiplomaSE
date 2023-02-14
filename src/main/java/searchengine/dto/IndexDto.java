@@ -1,11 +1,4 @@
 package searchengine.dto;
 
-import lombok.*;
-
-@Data
-@AllArgsConstructor
-public class IndexDto {
-    private long pageID;
-    private long lemmaID;
-    private float rank;
+public record IndexDto (long pageID, long lemmaID, float rank){
 }

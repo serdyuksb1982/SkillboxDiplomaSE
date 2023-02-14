@@ -77,10 +77,10 @@ public class SiteIndexed implements Runnable {
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
 
                 for (PageDto page : pageDtoList) {
-                    int start = page.getUrl().indexOf(url) + url.length();
-                    String pageFormat = page.getUrl().substring(start);
-                    pageList.add(new PageModel(site, pageFormat, page.getCode(),
-                            page.getContent()));
+                    int start = page.url().indexOf(url) + url.length();
+                    String pageFormat = page.url().substring(start);
+                    pageList.add(new PageModel(site, pageFormat, page.code(),
+                            page.content()));
                 }
                 pageRepository.flush();
                 pageRepository.saveAll(pageList);
@@ -96,7 +96,7 @@ public class SiteIndexed implements Runnable {
                 List<LemmaModel> lemmaList = new CopyOnWriteArrayList<>();
 
                 for (LemmaDto lemmaDto : lemmaDtoList) {
-                    lemmaList.add(new LemmaModel(lemmaDto.getLemma(), lemmaDto.getFrequency(), siteModel));
+                    lemmaList.add(new LemmaModel(lemmaDto.lemma(), lemmaDto.frequency(), siteModel));
                 }
                 lemmaRepository.flush();
                 lemmaRepository.saveAll(lemmaList);
@@ -110,9 +110,9 @@ public class SiteIndexed implements Runnable {
                 List<IndexModel> indexModels = new CopyOnWriteArrayList<>();
                 site.setStatusTime(new Date());
                 for (IndexDto indexDto : indexDtoList) {
-                    PageModel page = pageRepository.getById(indexDto.getPageID());
-                    LemmaModel lemma = lemmaRepository.getById(indexDto.getLemmaID());
-                    indexModels.add(new IndexModel(page, lemma, indexDto.getRank()));
+                    PageModel page = pageRepository.getById(indexDto.pageID());
+                    LemmaModel lemma = lemmaRepository.getById(indexDto.lemmaID());
+                    indexModels.add(new IndexModel(page, lemma, indexDto.rank()));
                 }
                 indexRepository.flush();
                 indexRepository.saveAll(indexModels);

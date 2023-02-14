@@ -47,7 +47,7 @@ public class SearchStarter {
         for (LemmaModel l : foundLemmaList) {
             if (l.getLemma().equals(text)) {
                 searchData = (searchService.createSearchDtoList(foundLemmaList, textLemmaList, start, limit));
-                searchData.sort((o1, o2) -> Float.compare(o2.getRelevance(), o1.getRelevance()));
+                searchData.sort((o1, o2) -> Float.compare(o2.relevance(), o1.relevance()));
                 if (searchData.size() > limit) {
                     var i = start;
                     while (i < limit) {
