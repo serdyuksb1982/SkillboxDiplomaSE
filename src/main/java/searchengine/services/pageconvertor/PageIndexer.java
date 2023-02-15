@@ -11,7 +11,6 @@ import searchengine.dto.PageDto;
 import searchengine.exception.CurrentIOException;
 import searchengine.exception.CurrentInterruptedException;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,8 +49,6 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
                         .get();
             } catch (IOException e) {
                 new CurrentIOException(e.getMessage());
-            } catch (InterruptedException e) {
-                new CurrentInterruptedException(e.getMessage());
             }
             assert doc != null;
             String html = doc.outerHtml();
@@ -59,21 +56,20 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             int status = response.statusCode();
             PageDto pageDto = new PageDto(url, html, status);
             pageDtoList.add(pageDto);
-            Elements elements = doc.select("body")
-                    .select("a");
+            Elements elements = doc.select("body").select("a");
             List<PageIndexer> taskList = new ArrayList<>();
+            PageIndexer task;
             for (Element el : elements) {
                 String link = el.attr("abs:href");
-                if (isSiteElementsType(link)) {
-                    if (link.startsWith(el.baseUri())
-                            && !link.equals(el.baseUri())
-                            && !link.contains("#")
-                            && !urlList.contains(link)) {
-                        urlList.add(link);
-                        PageIndexer task = new PageIndexer(link, pageDtoList, urlList, config);
-                        task.fork();
-                        taskList.add(task);
-                    }
+                if (isSiteElementsType(link)
+                        && link.startsWith(el.baseUri())
+                        && !link.equals(el.baseUri())
+                        && !link.contains("#")
+                        && !urlList.contains(link)) {
+                    urlList.add(link);
+                    task = new PageIndexer(link, pageDtoList, urlList, config);
+                    task.fork();
+                    taskList.add(task);
                 }
             }
             taskList.forEach(ForkJoinTask::join);

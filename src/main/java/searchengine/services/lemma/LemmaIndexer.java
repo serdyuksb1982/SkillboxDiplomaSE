@@ -31,24 +31,28 @@ public class LemmaIndexer {
         Iterable<PageModel> pageList = pageRepository.findAll();
 
         Map<String, Integer> lemmaList = new TreeMap<>();
-        for (PageModel page : pageList) {
+        Map<String, Integer> titleSiteList;
+        Map<String, Integer> bodySiteList;
+        Set<String> allWordsInIndexingSite;
+
+        for (var page : pageList) {
             String content = page.getContent();
             String title = clearHtml(content, "title");
             String body = clearHtml(content, "body");
-            Map<String, Integer> titleList = lemmaEngine.getLemmaMap(title);
-            Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
-            Set<String> allWords = new HashSet<>();
-            allWords.addAll(titleList.keySet());
-            allWords.addAll(bodyList.keySet());
-            for (String word : allWords) {
+            titleSiteList = lemmaEngine.getLemmaMap(title);
+            bodySiteList = lemmaEngine.getLemmaMap(body);
+            allWordsInIndexingSite = new HashSet<>();
+            allWordsInIndexingSite.addAll(titleSiteList.keySet());
+            allWordsInIndexingSite.addAll(bodySiteList.keySet());
+            allWordsInIndexingSite.forEach(word -> {
                 int frequency = lemmaList.getOrDefault(word, 0) + 1;
                 lemmaList.put(word, frequency);
-            }
+            });
         }
-        for (String lemma : lemmaList.keySet()) {
+        lemmaList.keySet().forEach(lemma -> {
             Integer frequency = lemmaList.get(lemma);
             lemmaDtoList.add(new LemmaDto(lemma, frequency));
-        }
+        });
     }
 
     public String clearHtml(String content, String tag) {

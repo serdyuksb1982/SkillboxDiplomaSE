@@ -33,7 +33,7 @@ public class WebParser {
     private final LemmaEngine lemmaEngine;
     private List<IndexDto> config;
 
-    public void startWebParser(SiteModel site) {
+    public Void startWebParser(SiteModel site) {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
         config = new ArrayList<>();
@@ -44,20 +44,20 @@ public class WebParser {
                 String content = page.getContent();
                 String title = clearCodeFromTag(content, "title");
                 String body = clearCodeFromTag(content, "body");
-                Map<String, Integer> titleList = lemmaEngine.getLemmaMap(title);
-                Map<String, Integer> bodyList = lemmaEngine.getLemmaMap(body);
+                Map<String, Integer> titleSiteList = lemmaEngine.getLemmaMap(title);
+                Map<String, Integer> bodySiteList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
                     long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
-                    if (titleList.containsKey(keyWord) || bodyList.containsKey(keyWord)) {
+                    if (titleSiteList.containsKey(keyWord) || bodySiteList.containsKey(keyWord)) {
                         float totalRank = 0.0f;
-                        if (titleList.get(keyWord) != null) {
-                            float titleRank = titleList.get(keyWord);
+                        if (titleSiteList.get(keyWord) != null) {
+                            float titleRank = titleSiteList.get(keyWord);
                             totalRank += titleRank;
                         }
-                        if (bodyList.get(keyWord) != null) {
-                            float bodyRank = (float) (bodyList.get(keyWord) * 0.8);
+                        if (bodySiteList.get(keyWord) != null) {
+                            float bodyRank = (float) (bodySiteList.get(keyWord) * 0.8);
                             totalRank += bodyRank;
                         }
                         config.add(new IndexDto(pageId, lemmaId, totalRank));
@@ -69,6 +69,7 @@ public class WebParser {
                 log.debug("Bad status code - " + page.getCode());
             }
         }
+        return null;
     }
 
     public String clearCodeFromTag(String content, String s) {

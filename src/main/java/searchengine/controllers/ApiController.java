@@ -79,7 +79,6 @@ public class ApiController {
         List<SearchDto> searchData;
         if (!site.isEmpty()) {
             if (siteRepository.findByUrl(site) == null) {
-
                 return new ResponseEntity<>(new ResultDTO(false, "Данная страница находится за пределами сайтов,\n" +
                         "указанных в конфигурационном файле"), HttpStatus.BAD_REQUEST);
             } else {

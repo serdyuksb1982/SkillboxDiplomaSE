@@ -18,13 +18,12 @@ import java.util.*;
 public class LemmaEngine {
     private final LemmaConfiguration lemmaConfiguration;
 
-    public Map<String, Integer> getLemmaMap(String text) throws RuntimeException {
-
+    public Map<String, Integer> getLemmaMap(String text) {
         text = arrayContainsWords(text);
         Map<String, Integer> lemmaList = new HashMap<>();
         String[] elements = text.toLowerCase(Locale.ROOT).split("\\s+");
+        List<String> wordsList;
         for (String el : elements) {
-            List<String> wordsList;
             try {
                 wordsList = getLemma(el);
             } catch (Exception e) {
@@ -81,17 +80,17 @@ public class LemmaEngine {
 
     public Collection<Integer> findLemmaIndexInText(String content, String lemma) throws IOException {
         List<Integer> lemmaIndexList = new ArrayList<>();
-        String[] elements = content.toLowerCase(Locale.ROOT).split("\\p{Punct}|\\s");
+        String[] elements = content.toLowerCase(Locale.ROOT)
+                .split("\\p{Punct}|\\s");
         int index = 0;
+        List<String> lemmas;
         for (String el : elements) {
-
-            List<String> lemmas = getLemma(el);
+            lemmas = getLemma(el);
             for (String lem : lemmas) {
                 if (lem.equals(lemma)) {
                     lemmaIndexList.add(index);
                 }
             }
-
             index += el.length() + 1;
         }
         return lemmaIndexList;

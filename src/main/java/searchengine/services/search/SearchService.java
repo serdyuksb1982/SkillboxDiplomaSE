@@ -37,31 +37,31 @@ public class SearchService {
     private List<SearchDto> getSearchDtoList(ConcurrentHashMap<PageModel, Float> pageList,
                                              List<String> textLemmaList) {
         List<SearchDto> searchDtoList = new ArrayList<>();
+        StringBuilder titleStringBuilder = new StringBuilder();
         for (PageModel page : pageList.keySet()) {
             String uri = page.getPath();
             String content = page.getContent();
             SiteModel pageSite = page.getSiteId();
             String site = pageSite.getUrl();
             String siteName = pageSite.getName();
-            StringBuilder stringBuilder = new StringBuilder();
             String title = clearHtmlCode(content, "title");
             String body = clearHtmlCode(content, "body");
-            stringBuilder.append(title).append(body);
-            float value = pageList.get(page);
+            titleStringBuilder.append(title).append(body);
+            float pageValue = pageList.get(page);
             List<Integer> lemmaIndex = new ArrayList<>();
-            StringBuilder snippetBuilder = new StringBuilder();
             int i = 0;
             while (i < textLemmaList.size()) {
                 String lemma = textLemmaList.get(i);
                 try {
-                    lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(stringBuilder.toString(), lemma));
+                    lemmaIndex.addAll(lemmaEngine.findLemmaIndexInText(titleStringBuilder.toString(), lemma));
                 } catch (IOException e) {
                     new CurrentIOException(e.getMessage());
                 }
                 i++;
             }
             Collections.sort(lemmaIndex);
-            List<String> wordList = getWordsFromSiteContent(stringBuilder.toString(), lemmaIndex);
+            StringBuilder snippetBuilder = new StringBuilder();
+            List<String> wordList = getWordsFromSiteContent(titleStringBuilder.toString(), lemmaIndex);
             int y = 0;
             while (y < wordList.size()) {
                 snippetBuilder.append(wordList.get(y)).append(".");
@@ -70,8 +70,7 @@ public class SearchService {
                 }
                 y++;
             }
-
-            searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), value));
+            searchDtoList.add(new SearchDto(site, siteName, uri, title, snippetBuilder.toString(), pageValue));
         }
         return searchDtoList;
     }
@@ -110,10 +109,10 @@ public class SearchService {
         Map<PageModel, Float> relevanceMap = new HashMap<>();
 
         int i = 0;
+        int j = 0;
         while (i < pageList.size()) {
             PageModel page = pageList.get(i);
             float relevance = 0;
-            int j = 0;
             while (j < indexList.size()) {
                 IndexModel index = indexList.get(j);
                 if (index.getPage() == page) {
@@ -127,17 +126,18 @@ public class SearchService {
 
         Map<PageModel, Float> allRelevanceMap = new HashMap<>();
 
-        for (PageModel page : relevanceMap.keySet()) {
+        relevanceMap.keySet().forEach(page -> {
             float relevance = relevanceMap.get(page) / Collections.max(relevanceMap.values());
             allRelevanceMap.put(page, relevance);
-        }
+        });
 
         List<Map.Entry<PageModel, Float>> sortList = new ArrayList<>(allRelevanceMap.entrySet());
         sortList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
         Map<PageModel, Float> map = new ConcurrentHashMap<>();
+        Entry<PageModel, Float> pageModelFloatEntry;
         int y = 0;
         while (y < sortList.size()) {
-            Entry<PageModel, Float> pageModelFloatEntry = sortList.get(y);
+            pageModelFloatEntry = sortList.get(y);
             map.putIfAbsent(pageModelFloatEntry.getKey(), pageModelFloatEntry.getValue());
             y++;
         }
@@ -156,10 +156,11 @@ public class SearchService {
         String[] words = text.toLowerCase(Locale.ROOT).split(" ");
         List<String> lemmaList = new ArrayList<>();
         int i = 0;
+        List<String> list;
         while (i < words.length) {
             String lemma = words[i];
             try {
-                List<String> list = lemmaEngine.getLemma(lemma);
+                list = lemmaEngine.getLemma(lemma);
                 lemmaList.addAll(list);
             } catch (IOException e) {
                 new CurrentIOException(e.getMessage());

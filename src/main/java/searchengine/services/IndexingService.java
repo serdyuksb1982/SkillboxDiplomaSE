@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.response.ResultDTO;
-import searchengine.model.IndexModel;
-import searchengine.model.LemmaModel;
-import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.repository.IndexRepository;
 import searchengine.repository.LemmaRepository;
@@ -59,7 +56,8 @@ public class IndexingService {
                         lemmaIndexer,
                         webParser,
                         url,
-                        config));}
+                        config));
+            }
             executorService.shutdown();
         }
         return new ResultDTO(true);
@@ -87,20 +85,12 @@ public class IndexingService {
         return false;
     }
 
-
     public boolean indexPage(String urlPage) {
 
         if (isUrlSiteEquals(urlPage)) {
             log.info("Начата переиндексация сайта - " + urlPage);
             executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            executorService.submit(new SiteIndexed(pageRepository,
-                    siteRepository,
-                    lemmaRepository,
-                    indexRepository,
-                    lemmaIndexer,
-                    webParser,
-                    urlPage,
-                    config));
+            executorService.submit(new SiteIndexed(pageRepository, siteRepository, lemmaRepository, indexRepository, lemmaIndexer, webParser, urlPage, config));
             executorService.shutdown();
             return true;
         } else {
@@ -109,12 +99,8 @@ public class IndexingService {
 
     }
 
-
-
     private boolean isUrlSiteEquals(String url) {
-        List<Site> urlList = config.getSites();
-        return urlList.stream().anyMatch(site -> site.getUrl().equals(url));
+        return config.getSites().stream().anyMatch(site -> site.getUrl().equals(url));
     }
-
 
 }
