@@ -1,6 +1,5 @@
 package searchengine.search;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.SearchDto;
 import searchengine.model.LemmaModel;
@@ -12,11 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-public class SearchStarter {
-    private final SiteRepository siteRepository;
-
-    private final SearchService searchService;
+public record SearchStarter(SiteRepository siteRepository, SearchService searchService) {
 
     public List<SearchDto> getSearchFromOneSite(String text,
                                                 String url,

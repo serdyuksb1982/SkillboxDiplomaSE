@@ -9,7 +9,7 @@ import searchengine.dto.response.ResultDTO;
 import searchengine.exception.CurrentRuntimeException;
 
 @RestControllerAdvice
-public class ExceptionHandlerController {
+public record ExceptionHandlerController() {
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<ResultDTO> nullPointerException(NullPointerException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

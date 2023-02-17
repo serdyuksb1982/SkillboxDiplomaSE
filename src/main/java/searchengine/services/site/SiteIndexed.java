@@ -23,12 +23,13 @@ import searchengine.services.pageconvertor.PageIndexer;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 
 @RequiredArgsConstructor
 @Slf4j
-public class SiteIndexed implements Runnable {
+public class SiteIndexed implements Callable<Boolean> {
 
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
@@ -43,7 +44,7 @@ public class SiteIndexed implements Runnable {
      * This is method start indexing sites, and set in model...
      */
     @Override
-    public void run() {
+    public Boolean call() {
         if (siteRepository.findByUrl(url) != null) {
             log.info("start site date delete from ".concat(url));
             SiteModel site = siteRepository.findByUrl(url);
@@ -82,6 +83,33 @@ public class SiteIndexed implements Runnable {
                 throw new CurrentInterruptedException("Local interrupted exception.");
             }
 
+            new LemmaIndexing().saveLemmasInLemmaDTO();
+
+
+            new AllSiteIndexing().getSiteAllIndexing(site);
+
+        } catch (CurrentInterruptedException e) {
+            log.error("WebParser stopped from ".concat(url).concat(". ").concat(e.getMessage()));
+            SiteModel sites = new SiteModel();
+            sites.setLastError("WebParser stopped");
+            sites.setStatus(Status.FAILED);
+            sites.setStatusTime(new Date());
+            siteRepository.saveAndFlush(site);
+            new CurrentInterruptedException("Interrupted exception");
+        }
+        return true;
+    }
+
+    private String getSiteName() {
+        return config.getSites().stream()
+                .filter(site -> site.getUrl().equals(url))
+                .findFirst()
+                .map(Site::getName)
+                .orElse("");
+    }
+    private class LemmaIndexing {
+
+        private void saveLemmasInLemmaDTO() throws CurrentInterruptedException {
             if (!Thread.interrupted()) {
                 SiteModel siteModel = siteRepository.findByUrl(url);
                 siteModel.setStatusTime(new Date());
@@ -94,9 +122,13 @@ public class SiteIndexed implements Runnable {
                 }
                 lemmaRepository.saveAllAndFlush(lemmaList);
             } else {
-                throw new CurrentInterruptedException("Invalid lemmas writer!");
+                throw new CurrentInterruptedException("Invalid saveLemmasInLemmaDTO");
             }
+        }
+    }
 
+    private class AllSiteIndexing {
+        private void getSiteAllIndexing(SiteModel site) throws CurrentInterruptedException {
             if (!Thread.interrupted()) {
                 webParser.startWebParser(site);
                 List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(webParser.getConfig());
@@ -117,26 +149,9 @@ public class SiteIndexed implements Runnable {
                 siteRepository.saveAndFlush(site);
 
             } else {
-                throw new CurrentInterruptedException("Current site indexing exception");
+                throw new CurrentInterruptedException("Invalid getSiteAllIndexing");
             }
-
-        } catch (CurrentInterruptedException e) {
-            log.error("WebParser stopped from ".concat(url).concat(". ").concat(e.getMessage()));
-            SiteModel sites = new SiteModel();
-            sites.setLastError("WebParser stopped");
-            sites.setStatus(Status.FAILED);
-            sites.setStatusTime(new Date());
-            siteRepository.saveAndFlush(site);
-            new CurrentInterruptedException("Interrupted exception");
         }
-    }
-
-    private String getSiteName() {
-        return config.getSites().stream()
-                .filter(site -> site.getUrl().equals(url))
-                .findFirst()
-                .map(Site::getName)
-                .orElse("");
     }
 }
 

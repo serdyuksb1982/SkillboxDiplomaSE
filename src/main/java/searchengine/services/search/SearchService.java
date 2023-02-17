@@ -1,6 +1,5 @@
 package searchengine.services.search;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,7 +8,6 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import searchengine.dto.SearchDto;
 import searchengine.exception.CurrentIOException;
-import searchengine.exception.CurrentRuntimeException;
 import searchengine.lemma.LemmaEngine;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
@@ -26,13 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class SearchService {
-    private final LemmaEngine lemmaEngine;
-    private final LemmaRepository lemmaRepository;
-    private final PageRepository pageRepository;
-    private final IndexRepository indexRepository;
+public record SearchService(LemmaEngine lemmaEngine, LemmaRepository lemmaRepository, PageRepository pageRepository, IndexRepository indexRepository) {
 
     private List<SearchDto> getSearchDtoList(ConcurrentHashMap<PageModel, Float> pageList,
                                              List<String> textLemmaList) {

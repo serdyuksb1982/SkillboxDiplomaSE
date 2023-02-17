@@ -20,7 +20,7 @@ import java.util.concurrent.RecursiveTask;
 
 
 @Slf4j
-public class PageIndexer extends RecursiveTask<List<PageDto>> {
+public class PageIndexer extends RecursiveTask<List<PageDto>>  {
     private final String url;
     private final List<String> urlList;
     private final List<PageDto> pageDtoList;
@@ -61,7 +61,7 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             PageIndexer task;
             for (Element el : elements) {
                 String link = el.attr("abs:href");
-                if (isSiteElementsType(link)
+                if (isHTMLCodeCheck(link)
                         && link.startsWith(el.baseUri())
                         && !link.equals(el.baseUri())
                         && !link.contains("#")
@@ -82,8 +82,8 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
         return pageDtoList;
     }
 
-    private boolean isSiteElementsType(String pathPage) {
-        List<String> WRONG_TYPES = Arrays.asList("JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip");
-        return !WRONG_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
+    private boolean isHTMLCodeCheck(String pathPage) {
+        List<String> ELEMENT_TYPES = Arrays.asList("JPG", "gif", "gz", "jar", "jpeg", "jpg", "pdf", "png", "ppt", "pptx", "svg", "svg", "tar", "zip");
+        return !ELEMENT_TYPES.contains(pathPage.substring(pathPage.lastIndexOf(".") + 1));
     }
 }

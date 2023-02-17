@@ -18,21 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @Slf4j
-public class ApiController {
-    private final StatisticsService statisticsService;
-    private final IndexingService indexingService;
-    private final SiteRepository siteRepository;
-    private final SearchStarter searchStarter;
-
-    public ApiController(StatisticsService statisticsService,
-                         IndexingService indexingService,
-                         SiteRepository siteRepository,
-                         SearchStarter searchService) {
-        this.statisticsService = statisticsService;
-        this.indexingService = indexingService;
-        this.siteRepository = siteRepository;
-        this.searchStarter = searchService;
-    }
+public record ApiController(StatisticsService statisticsService, IndexingService indexingService, SiteRepository siteRepository, SearchStarter searchStarter) {
 
     @ApiOperation("Get all statistics")
     @GetMapping("/statistics")

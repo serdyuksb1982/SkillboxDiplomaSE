@@ -1,9 +1,6 @@
 package searchengine.lemma;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import searchengine.config.LemmaConfiguration;
 import searchengine.exception.CurrentRuntimeException;
@@ -13,10 +10,7 @@ import java.util.*;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
-@Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class LemmaEngine {
-    private final LemmaConfiguration lemmaConfiguration;
+public record LemmaEngine(LemmaConfiguration lemmaConfiguration) {
 
     public Map<String, Integer> getLemmaMap(String text) {
         text = arrayContainsWords(text);
