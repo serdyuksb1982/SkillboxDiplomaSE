@@ -17,11 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-public class StatisticsService {
-    private final PageRepository pageRepository;
-    private final LemmaRepository lemmaRepository;
-    private final SiteRepository siteRepository;
+public record StatisticsService(PageRepository pageRepository, LemmaRepository lemmaRepository, SiteRepository siteRepository) {
 
     private TotalStatistics getTotalStatistics() {
         long sites = siteRepository.count();

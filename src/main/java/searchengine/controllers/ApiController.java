@@ -61,7 +61,6 @@ public record ApiController(StatisticsService statisticsService, IndexingService
     public ResponseEntity<ResultDTO> search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                                             @RequestParam(name = "site", required = false, defaultValue = "") String site,
                                             @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
-
         List<SearchDto> searchData;
         if (!site.isEmpty()) {
             if (siteRepository.findByUrl(site) == null) {

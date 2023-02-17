@@ -17,6 +17,7 @@ public record LemmaEngine(LemmaConfiguration lemmaConfiguration) {
         Map<String, Integer> lemmaList = new HashMap<>();
         String[] elements = text.toLowerCase(Locale.ROOT).split("\\s+");
         List<String> wordsList;
+        int count;
         for (String el : elements) {
             try {
                 wordsList = getLemma(el);
@@ -24,7 +25,7 @@ public record LemmaEngine(LemmaConfiguration lemmaConfiguration) {
                 throw new CurrentRuntimeException(e.getMessage());
             }
             for (String word : wordsList) {
-                int count = lemmaList.getOrDefault(word, 0);
+                count = lemmaList.getOrDefault(word, 0);
                 lemmaList.put(word, count + 1);
             }
         }
