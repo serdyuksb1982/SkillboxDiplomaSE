@@ -68,11 +68,7 @@ create database search_engine, migrate tables -> flyway;
     create-schemas: true
     locations: classpath:db/migration
     enabled: true
-    baseline-on-migrate: true
-  datasource:
-    url: jdbc:mysql://localhost:3306/search_engine?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${your username}
-    password: ${your password}
+    baseline-on-migrate: true  
   jpa:
     hibernate:
       ddl-auto: update
@@ -80,8 +76,13 @@ create database search_engine, migrate tables -> flyway;
   From Swagger Api  
   mvc:
     path match:
-      matching-strategy: ant_path_matcher
+      matching-strategy: ant_path_matcher      
+   http://localhost:8080/v2/api-docs
+***   
+   ENV: DB_PASSWORD=root;
+        DB_URL=jdbc:mysql://localhost:3306/search_engine?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true;
+        DB_USER_NAME=root;
+        USER_AGENT='Mozilla/5.0';
+        REFERRER=http://www.google.com   
       
-   http://localhost:8080/v2/api-docs   
-      
-***
+

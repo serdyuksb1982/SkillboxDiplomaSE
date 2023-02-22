@@ -48,6 +48,7 @@ public class WebParser {
                 Map<String, Integer> bodySiteList = lemmaEngine.getLemmaMap(body);
 
                 for (LemmaModel lemma : lemmaList) {
+
                     long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleSiteList.containsKey(keyWord) || bodySiteList.containsKey(keyWord)) {

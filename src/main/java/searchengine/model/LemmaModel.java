@@ -3,6 +3,7 @@ package searchengine.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "lemma")
-public class LemmaModel {
+public class LemmaModel implements Serializable {
 
     /*id INT NOT NULL AUTO_INCREMENT;
     site_id INT NOT NULL — ID веб-сайта из таблицы site;

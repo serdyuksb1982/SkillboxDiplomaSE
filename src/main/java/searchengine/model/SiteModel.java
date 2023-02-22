@@ -4,6 +4,7 @@ import lombok.*;
 import searchengine.model.enums.Status;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 @Table(name = "site")
 @Getter
 @Setter
-public class SiteModel {
+public class SiteModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
     ● status ENUM('INDEXING', 'INDEXED', 'FAILED') NOT NULL — текущий

@@ -38,7 +38,7 @@ public class SiteIndexed implements Callable<Boolean> {
     private final LemmaIndexer lemmaIndexer;
     private final WebParser webParser;
     private final String url;
-    private final SitesList config;
+    private final SitesList sitesListConfiguration;
 
     /**
      * This is method start indexing sites, and set in model...
@@ -69,7 +69,7 @@ public class SiteIndexed implements Callable<Boolean> {
                     List<PageDto> pageDtosList = new CopyOnWriteArrayList<>();
                     List<String> urlList = new CopyOnWriteArrayList<>();
                     ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls, pageDtosList, urlList, config));
+                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls, pageDtosList, urlList, sitesListConfiguration));
                     pageDtoList = new CopyOnWriteArrayList<>(pages);
                 } else throw new CurrentInterruptedException("Fork join exception!");
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
@@ -101,7 +101,7 @@ public class SiteIndexed implements Callable<Boolean> {
     }
 
     private String getSiteName() {
-        return config.getSites().stream()
+        return sitesListConfiguration.getSites().stream()
                 .filter(site -> site.getUrl().equals(url))
                 .findFirst()
                 .map(Site::getName)
