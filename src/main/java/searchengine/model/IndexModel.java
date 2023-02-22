@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Table(name = "words_index")
-@EqualsAndHashCode
+@NoArgsConstructor
 public class IndexModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
@@ -37,8 +37,5 @@ public class IndexModel implements Serializable {
         this.page = page;
         this.lemma = lemma;
         this.rank = rank;
-    }
-
-    public IndexModel() {
     }
 }
