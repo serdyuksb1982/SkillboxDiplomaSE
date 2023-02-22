@@ -37,8 +37,8 @@ public record SearchService(LemmaEngine lemmaEngine, LemmaRepository lemmaReposi
             SiteModel pageSite = page.getSiteId();
             String site = pageSite.getUrl();
             String siteName = pageSite.getName();
-            String title = clearHtmlCode(content, "title");
-            String body = clearHtmlCode(content, "body");
+            String title = clearCodeFromTag(content, "title");
+            String body = clearCodeFromTag(content, "body");
             titleStringBuilder.append(title).append(body);
             float pageValue = pageList.get(page);
             List<Integer> lemmaIndex = new ArrayList<>();
@@ -189,7 +189,7 @@ public record SearchService(LemmaEngine lemmaEngine, LemmaRepository lemmaReposi
         } else return result;
     }
 
-    public  String clearHtmlCode(String text, String element) {
+    public  String clearCodeFromTag(String text, String element) {
         String stringBuilder;
         Document doc = Jsoup.parse(text);
         Elements elements = doc.select(element);

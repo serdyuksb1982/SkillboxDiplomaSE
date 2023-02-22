@@ -37,8 +37,8 @@ public class LemmaIndexer {
 
         for (var page : pageList) {
             String content = page.getContent();
-            String title = clearHtml(content, "title");
-            String body = clearHtml(content, "body");
+            String title = clearCodeFromTag(content, "title");
+            String body = clearCodeFromTag(content, "body");
             titleSiteList = lemmaEngine.getLemmaMap(title);
             bodySiteList = lemmaEngine.getLemmaMap(body);
             allWordsInIndexingSite = new HashSet<>();
@@ -55,7 +55,7 @@ public class LemmaIndexer {
         });
     }
 
-    public String clearHtml(String content, String tag) {
+    public String clearCodeFromTag(String content, String tag) {
         String html;
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(tag);
