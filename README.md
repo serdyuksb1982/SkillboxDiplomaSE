@@ -64,25 +64,53 @@ create database search_engine, migrate tables -> flyway;
 
 - Change the datasource setting in application.yaml.
  ``` yaml
+
+  server:
+  port: 8080
+
+spring:
   flyway:
     create-schemas: true
     locations: classpath:db/migration
     enabled: true
-    baseline-on-migrate: true  
+    baseline-on-migrate: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/search_engine?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-  From Swagger Api  
   mvc:
     path match:
-      matching-strategy: ant_path_matcher      
-   http://localhost:8080/v2/api-docs
+      matching-strategy: ant_path_matcher
+
+indexing-settings:
+  sites:
+    - url: https://www.skillbox.ru
+      name: Skillbox
+      #- url: https://www.lenta.ru
+      #name: Лента.ру
+      #- url: https://www.skillbox.ru
+      #name: Skillbox
+      #- url: https://www.playback.ru
+      #name: PlayBack.Ru
+      #- url: http://redmine-reports.soctech.loc
+      #name: Soctech.loc
+  userAgent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6
+  referrer: http://www.google.com
+search:
+  engine:
+    db:
+      url: ${DB_URL}
+      username: ${DB_USER_NAME}
+      password: ${DB_PASSWORD}
+      
 ***   
    ENV: DB_PASSWORD=root;
         DB_URL=jdbc:mysql://localhost:3306/search_engine?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true;
-        DB_USER_NAME=root;
-        USER_AGENT='Mozilla/5.0';
-        REFERRER=http://www.google.com   
+        DB_USER_NAME=root
       
 
