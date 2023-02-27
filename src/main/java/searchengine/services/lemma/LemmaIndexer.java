@@ -33,15 +33,16 @@ public class LemmaIndexer {
         Map<String, Integer> lemmaList = new TreeMap<>();
         Map<String, Integer> titleSiteList;
         Map<String, Integer> bodySiteList;
-        Set<String> allWordsInIndexingSite;
-
+        Set<String> allWordsInIndexingSite = new HashSet<>();;
+        String content;
+        String title;
+        String body;
         for (var page : pageList) {
-            String content = page.getContent();
-            String title = clearCodeFromTag(content, "title");
-            String body = clearCodeFromTag(content, "body");
+            content = page.getContent();
+            title = clearCodeFromTag(content, "title");
+            body = clearCodeFromTag(content, "body");
             titleSiteList = lemmaEngine.getLemmaMap(title);
             bodySiteList = lemmaEngine.getLemmaMap(body);
-            allWordsInIndexingSite = new HashSet<>();
             allWordsInIndexingSite.addAll(titleSiteList.keySet());
             allWordsInIndexingSite.addAll(bodySiteList.keySet());
             allWordsInIndexingSite.forEach(word -> {

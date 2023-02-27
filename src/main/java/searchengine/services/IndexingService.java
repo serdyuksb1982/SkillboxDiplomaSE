@@ -49,14 +49,8 @@ public class IndexingService {
                 SiteModel siteModel = new SiteModel();
                 siteModel.setName(site.getName());
                 log.info("Indexing web site ".concat(site.getName()));
-                executorService.submit(new SiteIndexed(pageRepository,
-                        siteRepository,
-                        lemmaRepository,
-                        indexRepository,
-                        lemmaIndexer,
-                        webParser,
-                        url,
-                        config));
+                executorService.submit(new SiteIndexed(pageRepository, siteRepository, lemmaRepository,
+                        indexRepository, lemmaIndexer, webParser, url, config));
             }
             executorService.shutdown();
         }

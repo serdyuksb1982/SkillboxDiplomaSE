@@ -37,7 +37,7 @@ public class WebParser {
         Iterable<PageModel> pageList = pageRepository.findBySiteId(site);
         List<LemmaModel> lemmaList = lemmaRepository.findBySiteModelId(site);
         config = new ArrayList<>();
-
+        final float RANK_COEF = 0.8f;
         for (PageModel page : pageList) {
             if (page.getCode() < 400) {
                 long pageId = page.getId();
@@ -46,19 +46,19 @@ public class WebParser {
                 String body = clearCodeFromTag(content, "body");
                 Map<String, Integer> titleSiteList = lemmaEngine.getLemmaMap(title);
                 Map<String, Integer> bodySiteList = lemmaEngine.getLemmaMap(body);
-
+                float totalRank = 0.0f;
+                float titleRank;
+                float bodyRank;
                 for (LemmaModel lemma : lemmaList) {
-
                     long lemmaId = lemma.getId();
                     String keyWord = lemma.getLemma();
                     if (titleSiteList.containsKey(keyWord) || bodySiteList.containsKey(keyWord)) {
-                        float totalRank = 0.0f;
                         if (titleSiteList.get(keyWord) != null) {
-                            float titleRank = titleSiteList.get(keyWord);
+                            titleRank = titleSiteList.get(keyWord);
                             totalRank += titleRank;
                         }
                         if (bodySiteList.get(keyWord) != null) {
-                            float bodyRank = (float) (bodySiteList.get(keyWord) * 0.8);
+                            bodyRank = bodySiteList.get(keyWord) * RANK_COEF;
                             totalRank += bodyRank;
                         }
                         config.add(new IndexDto(pageId, lemmaId, totalRank));

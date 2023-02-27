@@ -55,12 +55,8 @@ public class SiteIndexed implements Callable<Boolean> {
             siteRepository.delete(site);
         }
         log.info("Site indexing start ".concat(url).concat(" ").concat(getSiteName()) );
-        SiteModel site = new SiteModel();
-        site.setUrl(url);
-        site.setName(getSiteName());
-        site.setStatus(Status.INDEXING);
-        site.setStatusTime(new Date());
-        siteRepository.saveAndFlush(site);
+        SiteModelIndexing siteModelIndexing = new SiteModelIndexing();
+        SiteModel site = siteModelIndexing.getSiteModelRecord();
         try {
             if (!Thread.interrupted()) {
                 List<PageDto> pageDtoList;
@@ -73,9 +69,11 @@ public class SiteIndexed implements Callable<Boolean> {
                     pageDtoList = new CopyOnWriteArrayList<>(pages);
                 } else throw new CurrentInterruptedException("Fork join exception!");
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();
+                int start;
+                String pagePath;
                 for (PageDto page : pageDtoList) {
-                    int start = page.url().indexOf(url) + url.length();
-                    String pagePath = page.url().substring(start);
+                    start = page.url().indexOf(url) + url.length();
+                    pagePath = page.url().substring(start);
                     pageList.add(new PageModel(site, pagePath, page.code(), page.content()));
                 }
                 pageRepository.saveAllAndFlush(pageList);
@@ -83,16 +81,10 @@ public class SiteIndexed implements Callable<Boolean> {
                 throw new CurrentInterruptedException("Local interrupted exception.");
             }
             new LemmaIndexing().saveLemmasInLemmaDTO();
-
             new AllSiteIndexing().getSiteAllIndexing(site);
-
         } catch (CurrentInterruptedException e) {
             log.error("WebParser stopped from ".concat(url).concat(". ").concat(e.getMessage()));
-            SiteModel sites = new SiteModel();
-            sites.setLastError("WebParser stopped");
-            sites.setStatus(Status.FAILED);
-            sites.setStatusTime(new Date());
-            siteRepository.saveAndFlush(site);
+            new SiteModelIndexing().getErrorSiteModelRecord(site);
             new CurrentInterruptedException("Interrupted exception");
         }
         return true;
@@ -105,9 +97,29 @@ public class SiteIndexed implements Callable<Boolean> {
                 .map(Site::getName)
                 .orElse("");
     }
+
+    private class SiteModelIndexing {
+        protected SiteModel getSiteModelRecord() {
+            SiteModel site = new SiteModel();
+            site.setUrl(url);
+            site.setName(getSiteName());
+            site.setStatus(Status.INDEXING);
+            site.setStatusTime(new Date());
+            siteRepository.saveAndFlush(site);
+            return site;
+        }
+
+        protected void getErrorSiteModelRecord(SiteModel site) {
+            SiteModel sites = new SiteModel();
+            sites.setLastError("WebParser stopped");
+            sites.setStatus(Status.FAILED);
+            sites.setStatusTime(new Date());
+            siteRepository.saveAndFlush(site);
+        }
+    }
     private class LemmaIndexing {
 
-        private void saveLemmasInLemmaDTO() throws CurrentInterruptedException {
+        protected void saveLemmasInLemmaDTO() throws CurrentInterruptedException {
             if (!Thread.interrupted()) {
                 SiteModel siteModel = siteRepository.findByUrl(url);
                 siteModel.setStatusTime(new Date());
@@ -126,7 +138,7 @@ public class SiteIndexed implements Callable<Boolean> {
     }
 
     private class AllSiteIndexing {
-        private void getSiteAllIndexing(SiteModel site) throws CurrentInterruptedException {
+        protected void getSiteAllIndexing(SiteModel site) throws CurrentInterruptedException {
             if (!Thread.interrupted()) {
                 webParser.startWebParser(site);
                 List<IndexDto> indexDtoList = new CopyOnWriteArrayList<>(webParser.getConfig());
@@ -139,8 +151,7 @@ public class SiteIndexed implements Callable<Boolean> {
                     lemma = lemmaRepository.getById(indexDto.lemmaID());
                     indexModels.add(new IndexModel(page, lemma, indexDto.rank()));
                 }
-                indexRepository.flush();
-                indexRepository.saveAll(indexModels);
+                indexRepository.saveAllAndFlush(indexModels);
                 log.info("WebParser stopping ".concat(url));
                 site.setStatusTime(new Date());
                 site.setStatus(Status.INDEXED);
