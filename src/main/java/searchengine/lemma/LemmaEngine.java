@@ -1,5 +1,6 @@
 package searchengine.lemma;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import searchengine.config.LemmaConfiguration;
@@ -11,6 +12,7 @@ import java.util.*;
 @Component
 @Slf4j
 public record LemmaEngine(LemmaConfiguration lemmaConfiguration) {
+
 
     public Map<String, Integer> getLemmaMap(String text) {
         text = arrayContainsWords(text);

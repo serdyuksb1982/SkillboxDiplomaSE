@@ -1,6 +1,7 @@
 package searchengine.controllers;
 
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,20 +40,24 @@ public record ApiController(StatisticsService statisticsService, IndexingService
         return indexingService.stopIndexing();
     }
 
-    @ApiOperation("Indexing a single page")
     @PostMapping("/indexPage")
-    public ResultDTO indexPage(@RequestParam(name = "url", required = false, defaultValue = "") String url) {
+    @ApiOperation("Индексация отдельной страницы")
+    public ResultDTO indexPage(@RequestParam(name = "url") String url) {
         if (url.isEmpty()) {
+            log.info("Страница не указана");
             return new ResultDTO(false, "Страница не указана", HttpStatus.BAD_REQUEST);
         } else {
             if (indexingService.indexPage(url) == true) {
                 log.info("Страница - " + url + " - добавлена на переиндексацию");
                 return new ResultDTO(true, HttpStatus.OK);
             } else {
+                log.info("Указанная страница" + "за пределами конфигурационного файла");
                 return new ResultDTO(false, "Указанная страница" + "за пределами конфигурационного файла", HttpStatus.BAD_REQUEST);
             }
         }
     }
+
+
 
     @ApiOperation("Search in sites")
     @GetMapping("/search")
@@ -62,8 +67,9 @@ public record ApiController(StatisticsService statisticsService, IndexingService
         List<SearchDto> searchData;
         if (!site.isEmpty()) {
             if (siteRepository.findByUrl(site) == null) {
+
                 return new ResultDTO(false, "Данная страница находится за пределами сайтов,\n" +
-                        "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST);
+                        "указанных в конфигурационном файле", HttpStatus.BAD_REQUEST) ;
             } else {
                 searchData = searchStarter.getSearchFromOneSite(query, site, offset, 30);
             }

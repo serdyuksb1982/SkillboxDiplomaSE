@@ -13,7 +13,6 @@ import java.util.List;
 @Table(name = "site")
 @Getter
 @Setter
-@NoArgsConstructor
 public class SiteModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
@@ -67,5 +66,8 @@ public class SiteModel implements Serializable {
         this.name = name;
         this.pageModelList = pageModelList;
         this.lemmaModelList = lemmaModelList;
+    }
+
+    public SiteModel() {
     }
 }

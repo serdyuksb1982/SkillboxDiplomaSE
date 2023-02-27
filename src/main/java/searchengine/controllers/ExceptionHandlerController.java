@@ -11,11 +11,11 @@ import searchengine.exception.CurrentRuntimeException;
 public record ExceptionHandlerController() {
     @ExceptionHandler(NullPointerException.class)
     public ResultDTO nullPointerException(NullPointerException exception) {
-        return new ResultDTO(false, exception.getMessage(), HttpStatus.NOT_FOUND);
+        return new  ResultDTO(true, exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(CurrentRuntimeException.class)
     public ResultDTO handlerInterruptedException(CurrentRuntimeException exception) {
-        return new ResultDTO(true, exception.getMessage(), HttpStatus.OK);
+        return new  ResultDTO(true, exception.getMessage(), HttpStatus.OK);
     }
 }

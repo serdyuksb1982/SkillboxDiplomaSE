@@ -69,7 +69,7 @@ public class SiteIndexed implements Callable<Boolean> {
                     List<PageDto> pageDtosList = new CopyOnWriteArrayList<>();
                     List<String> urlList = new CopyOnWriteArrayList<>();
                     ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls, pageDtosList, urlList, sitesListConfiguration));
+                    List<PageDto> pages = forkJoinPool.invoke(new PageIndexer(urls,urlList, pageDtosList, sitesListConfiguration));
                     pageDtoList = new CopyOnWriteArrayList<>(pages);
                 } else throw new CurrentInterruptedException("Fork join exception!");
                 List<PageModel> pageList = new CopyOnWriteArrayList<>();

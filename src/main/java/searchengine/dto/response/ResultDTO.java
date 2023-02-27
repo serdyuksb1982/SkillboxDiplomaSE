@@ -17,9 +17,9 @@ public class ResultDTO {
 
     private int count;
 
-    private List<SearchDto> data;
-
     private HttpStatus status;
+
+    private List<SearchDto> data;
 
     public ResultDTO(boolean result) {
         this.result = result;
@@ -41,13 +41,17 @@ public class ResultDTO {
         this.status = status;
     }
 
+    public ResultDTO(boolean result, int count, List<SearchDto> data) {
+        this.result = result;
+        this.count = count;
+        this.data = data;
+    }
+
     public ResultDTO(boolean result, int count, List<SearchDto> data, HttpStatus status) {
         this.result = result;
         this.count = count;
         this.data = data;
         this.status = status;
     }
-
-
 }
 

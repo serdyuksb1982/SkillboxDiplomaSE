@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "lemma")
-@NoArgsConstructor
 public class LemmaModel implements Serializable {
 
     /*id INT NOT NULL AUTO_INCREMENT;
@@ -40,5 +39,8 @@ public class LemmaModel implements Serializable {
         this.lemma = lemma;
         this.frequency = frequency;
         this.siteModelId = siteModelId;
+    }
+
+    public LemmaModel() {
     }
 }

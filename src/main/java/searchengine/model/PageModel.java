@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "page")
-@NoArgsConstructor
 public class PageModel implements Serializable {
 
     /*● id INT NOT NULL AUTO_INCREMENT;
@@ -44,5 +43,8 @@ public class PageModel implements Serializable {
         this.path = path;
         this.code = code;
         this.content = content;
+    }
+
+    public PageModel() {
     }
 }
