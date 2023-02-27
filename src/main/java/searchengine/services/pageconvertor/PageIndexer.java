@@ -50,16 +50,13 @@ public class PageIndexer extends RecursiveTask<List<PageDto>> {
             List<PageIndexer> taskList = new ArrayList<>();
             for (Element el : elements) {
                 String link = el.attr("abs:href");
-                if (isSiteElementsType(link)) {
-                    if (link.startsWith(el.baseUri())
-                            && !link.equals(el.baseUri())
-                            && !link.contains("#")
-                            && !urlList.contains(link)) {
-                        urlList.add(link);
-                        PageIndexer task = new PageIndexer(link, urlList, pageDtoList, config);
-                        task.fork();
-                        taskList.add(task);
-                    }
+                if (isSiteElementsType(link) && link.startsWith(el.baseUri()) && !link.equals(el.baseUri())
+                        && !link.contains("#")
+                        && !urlList.contains(link)) {
+                    urlList.add(link);
+                    PageIndexer task = new PageIndexer(link, urlList, pageDtoList, config);
+                    task.fork();
+                    taskList.add(task);
                 }
             }
             taskList.forEach(ForkJoinTask::join);

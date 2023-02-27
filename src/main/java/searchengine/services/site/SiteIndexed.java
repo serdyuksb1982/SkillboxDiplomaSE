@@ -82,9 +82,7 @@ public class SiteIndexed implements Callable<Boolean> {
             } else {
                 throw new CurrentInterruptedException("Local interrupted exception.");
             }
-
             new LemmaIndexing().saveLemmasInLemmaDTO();
-
 
             new AllSiteIndexing().getSiteAllIndexing(site);
 

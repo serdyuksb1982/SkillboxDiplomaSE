@@ -86,7 +86,7 @@ public record SearchService(LemmaEngine lemmaEngine, LemmaRepository lemmaReposi
             if (content.lastIndexOf(" ", start) != -1) {
                 startIndex = content.lastIndexOf(" ", start);
             } else startIndex = start;
-            if (content.indexOf(" ", end + lemmaIndex.size() / 10) != -1) {
+            if (content.indexOf(" ", (end + lemmaIndex.size() / (lemmaIndex.size() / 10))) != -1) {
                 nextIndex = content.indexOf(" ", end + lemmaIndex.size() / 10);
             } else nextIndex = content.indexOf(" ", end);
             String text = content.substring(startIndex, nextIndex).replaceAll(word, "<b>".concat(word).concat("</b>"));
@@ -190,10 +190,9 @@ public record SearchService(LemmaEngine lemmaEngine, LemmaRepository lemmaReposi
     }
 
     public  String clearCodeFromTag(String text, String element) {
-        String stringBuilder;
         Document doc = Jsoup.parse(text);
         Elements elements = doc.select(element);
-        stringBuilder = elements.stream().map(Element::html).collect(Collectors.joining());
-        return Jsoup.parse(stringBuilder).text();
+        String html = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(html).text();
     }
 }

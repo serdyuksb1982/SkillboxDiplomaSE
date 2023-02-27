@@ -20,6 +20,8 @@ public class LemmaModel implements Serializable {
     встречается хотя бы один раз. Максимальное значение не может
     превышать общее количество слов на сайте*/
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

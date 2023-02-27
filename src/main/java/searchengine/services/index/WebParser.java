@@ -74,10 +74,9 @@ public class WebParser {
     }
 
     public String clearCodeFromTag(String content, String s) {
-        String stringBuilder;
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(s);
-        stringBuilder = elements.stream().map(Element::html).collect(Collectors.joining());
-        return Jsoup.parse(stringBuilder).text();
+        String html = elements.stream().map(Element::html).collect(Collectors.joining());
+        return Jsoup.parse(html).text();
     }
 }

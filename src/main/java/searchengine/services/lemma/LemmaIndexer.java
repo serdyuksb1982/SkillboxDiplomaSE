@@ -49,17 +49,16 @@ public class LemmaIndexer {
                 lemmaList.put(word, frequency);
             });
         }
-        lemmaList.keySet().forEach(lemma -> {
+        for (String lemma : lemmaList.keySet()) {
             Integer frequency = lemmaList.get(lemma);
             lemmaDtoList.add(new LemmaDto(lemma, frequency));
-        });
+        }
     }
 
     public String clearCodeFromTag(String content, String tag) {
-        String html;
         Document doc = Jsoup.parse(content);
         Elements elements = doc.select(tag);
-        html = elements.stream().map(Element::html).collect(Collectors.joining());
+        String html = elements.stream().map(Element::html).collect(Collectors.joining());
         return Jsoup.parse(html).text();
     }
 }
